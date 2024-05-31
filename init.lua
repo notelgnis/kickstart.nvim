@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -190,9 +190,23 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+local isMyScihemeDarkMode = true
+local toggleMySchemeDarkMode = function()
+  if isMyScihemeDarkMode then
+    vim.cmd [[set background=light]]
+    vim.cmd [[colorscheme PaperColor]]
+    isMyScihemeDarkMode = false
+  else
+    vim.cmd [[set background=dark]]
+    vim.cmd [[colorscheme gruvbox-material]]
+    isMyScihemeDarkMode = true
+  end
+end
+
+vim.keymap.set('n', '<leader>l', toggleMySchemeDarkMode, { desc = 'Toggle Dark mode' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
-
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
 --  See `:help vim.highlight.on_yank()`
@@ -213,6 +227,8 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+local uri_to_file_map = {}
+
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
@@ -227,7 +243,11 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-
+  'tpope/vim-fugitive',
+  'ryanoasis/vim-devicons',
+  'github/copilot.vim',
+  'kdheepak/lazygit.nvim',
+  'Issafalcon/lsp-overloads.nvim',
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
   -- keys can be used to configure plugin behavior/loading/etc.
@@ -236,7 +256,216 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
-
+  {
+    'preservim/nerdtree',
+    event = 'VimEnter',
+    config = function()
+      vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\]" contained conceal containedin=ALL]]
+      vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\[" contained conceal containedin=ALL]]
+      vim.cmd [[set background=light]]
+      vim.cmd [[colorscheme PaperColor]]
+    end,
+  },
+  {
+    'romgrk/barbar.nvim',
+    dependencies = {
+      'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
+      'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
+    },
+    init = function()
+      vim.g.barbar_auto_setup = false
+    end,
+    opts = {
+      -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
+      -- animation = true,
+      -- insert_at_start = true,
+      -- …etc.
+    },
+    version = '^1.0.0', -- optional: only update when a new 1.x version is released
+  },
+  { 'lukas-reineke/indent-blankline.nvim', main = 'ibl', opts = {} },
+  {
+    'stevearc/oil.nvim',
+    opts = {
+      {
+        -- Oil will take over directory buffers (e.g. `vim .` or `:e src/`)
+        -- Set to false if you still want to use netrw.
+        default_file_explorer = true,
+        -- Id is automatically added at the beginning, and name at the end
+        -- See :help oil-columns
+        columns = {
+          'icon',
+          -- "permissions",
+          -- "size",
+          -- "mtime",
+        },
+        -- Buffer-local options to use for oil buffers
+        buf_options = {
+          buflisted = false,
+          bufhidden = 'hide',
+        },
+        -- Window-local options to use for oil buffers
+        win_options = {
+          wrap = false,
+          signcolumn = 'no',
+          cursorcolumn = false,
+          foldcolumn = '0',
+          spell = false,
+          list = false,
+          conceallevel = 3,
+          concealcursor = 'nvic',
+        },
+        -- Send deleted files to the trash instead of permanently deleting them (:help oil-trash)
+        delete_to_trash = false,
+        -- Skip the confirmation popup for simple operations (:help oil.skip_confirm_for_simple_edits)
+        skip_confirm_for_simple_edits = false,
+        -- Selecting a new/moved/renamed file or directory will prompt you to save changes first
+        -- (:help prompt_save_on_select_new_entry)
+        prompt_save_on_select_new_entry = true,
+        -- Oil will automatically delete hidden buffers after this delay
+        -- You can set the delay to false to disable cleanup entirely
+        -- Note that the cleanup process only starts when none of the oil buffers are currently displayed
+        cleanup_delay_ms = 2000,
+        lsp_file_methods = {
+          -- Time to wait for LSP file operations to complete before skipping
+          timeout_ms = 1000,
+          -- Set to true to autosave buffers that are updated with LSP willRenameFiles
+          -- Set to "unmodified" to only save unmodified buffers
+          autosave_changes = false,
+        },
+        -- Constrain the cursor to the editable parts of the oil buffer
+        -- Set to `false` to disable, or "name" to keep it on the file names
+        constrain_cursor = 'editable',
+        -- Set to true to watch the filesystem for changes and reload oil
+        experimental_watch_for_changes = false,
+        -- Keymaps in oil buffer. Can be any value that `vim.keymap.set` accepts OR a table of keymap
+        -- options with a `callback` (e.g. { callback = function() ... end, desc = "", mode = "n" })
+        -- Additionally, if it is a string that matches "actions.<name>",
+        -- it will use the mapping at require("oil.actions").<name>
+        -- Set to `false` to remove a keymap
+        -- See :help oil-actions for a list of all available actions
+        keymaps = {
+          ['g?'] = 'actions.show_help',
+          ['<CR>'] = 'actions.select',
+          ['<C-s>'] = 'actions.select_vsplit',
+          ['<C-h>'] = 'actions.select_split',
+          ['<C-t>'] = 'actions.select_tab',
+          ['<C-p>'] = 'actions.preview',
+          ['<C-c>'] = 'actions.close',
+          ['<C-l>'] = 'actions.refresh',
+          ['-'] = 'actions.parent',
+          ['_'] = 'actions.open_cwd',
+          ['`'] = 'actions.cd',
+          ['~'] = 'actions.tcd',
+          ['gs'] = 'actions.change_sort',
+          ['gx'] = 'actions.open_external',
+          ['g.'] = 'actions.toggle_hidden',
+          ['g\\'] = 'actions.toggle_trash',
+        },
+        -- Set to false to disable all of the above keymaps
+        use_default_keymaps = true,
+        view_options = {
+          -- Show files and directories that start with "."
+          show_hidden = false,
+          -- This function defines what is considered a "hidden" file
+          is_hidden_file = function(name, bufnr)
+            return vim.startswith(name, '.')
+          end,
+          -- This function defines what will never be shown, even when `show_hidden` is set
+          is_always_hidden = function(name, bufnr)
+            return false
+          end,
+          -- Sort file names in a more intuitive order for humans. Is less performant,
+          -- so you may want to set to false if you work with large directories.
+          natural_order = true,
+          sort = {
+            -- sort order can be "asc" or "desc"
+            -- see :help oil-columns to see which columns are sortable
+            { 'type', 'asc' },
+            { 'name', 'asc' },
+          },
+        },
+        -- Extra arguments to pass to SCP when moving/copying files over SSH
+        extra_scp_args = {},
+        -- EXPERIMENTAL support for performing file operations with git
+        git = {
+          -- Return true to automatically git add/mv/rm files
+          add = function(path)
+            return false
+          end,
+          mv = function(src_path, dest_path)
+            return false
+          end,
+          rm = function(path)
+            return false
+          end,
+        },
+        -- Configuration for the floating window in oil.open_float
+        float = {
+          -- Padding around the floating window
+          padding = 2,
+          max_width = 0,
+          max_height = 0,
+          border = 'rounded',
+          win_options = {
+            winblend = 0,
+          },
+          -- This is the config that will be passed to nvim_open_win.
+          -- Change values here to customize the layout
+          override = function(conf)
+            return conf
+          end,
+        },
+        -- Configuration for the actions floating preview window
+        preview = {
+          -- Width dimensions can be integers or a float between 0 and 1 (e.g. 0.4 for 40%)
+          -- min_width and max_width can be a single value or a list of mixed integer/float types.
+          -- max_width = {100, 0.8} means "the lesser of 100 columns or 80% of total"
+          max_width = 0.9,
+          -- min_width = {40, 0.4} means "the greater of 40 columns or 40% of total"
+          min_width = { 40, 0.4 },
+          -- optionally define an integer/float for the exact width of the preview window
+          width = nil,
+          -- Height dimensions can be integers or a float between 0 and 1 (e.g. 0.4 for 40%)
+          -- min_height and max_height can be a single value or a list of mixed integer/float types.
+          -- max_height = {80, 0.9} means "the lesser of 80 columns or 90% of total"
+          max_height = 0.9,
+          -- min_height = {5, 0.1} means "the greater of 5 columns or 10% of total"
+          min_height = { 5, 0.1 },
+          -- optionally define an integer/float for the exact height of the preview window
+          height = nil,
+          border = 'rounded',
+          win_options = {
+            winblend = 0,
+          },
+          -- Whether the preview window is automatically updated when the cursor is moved
+          update_on_cursor_moved = true,
+        },
+        -- Configuration for the floating progress window
+        progress = {
+          max_width = 0.9,
+          min_width = { 40, 0.4 },
+          width = nil,
+          max_height = { 10, 0.9 },
+          min_height = { 5, 0.1 },
+          height = nil,
+          border = 'rounded',
+          minimized_border = 'none',
+          win_options = {
+            winblend = 0,
+          },
+        },
+        -- Configuration for the floating SSH window
+        ssh = {
+          border = 'rounded',
+        },
+        -- Configuration for the floating keymaps help window
+        keymaps_help = {
+          border = 'rounded',
+        },
+      },
+    },
+  },
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
@@ -287,6 +516,7 @@ require('lazy').setup({
         ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
+        ['<leader>n'] = { ':NERDTreeToggle<CR>', '[N]ERDTree toggle' },
         ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
       }
       -- visual mode
@@ -304,7 +534,8 @@ require('lazy').setup({
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
 
   { -- Fuzzy Finder (files, lsp, etc)
-    'nvim-telescope/telescope.nvim',
+    --WARN: switched to my fork 'nvim-telescope/telescope.nvim',
+    'notelgnis/telescope.nvim',
     event = 'VimEnter',
     branch = '0.1.x',
     dependencies = {
@@ -425,6 +656,7 @@ require('lazy').setup({
       { 'folke/neodev.nvim', opts = {} },
     },
     config = function()
+      -- vim.lsp.set_log_level 'debug'
       -- Brief aside: **What is LSP?**
       --
       -- LSP is an initialism you've probably heard, but might not understand what it is.
@@ -555,6 +787,14 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      local util = require 'lspconfig.util'
+      local getRootDir = function()
+        -- Задаёт рабочий каталог, в котором был запущен Neovim, как корневой каталог для LSP
+        return util.find_git_ancestor(vim.fn.getcwd()) or vim.fn.getcwd()
+      end
+
+      local projectRootPath = getRootDir()
+
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -577,8 +817,68 @@ require('lazy').setup({
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
         --
+        csharp_ls = {
+          root_dir = getRootDir,
+          handlers = {
+            ['textDocument/documentHighlight'] = function(_, result, ctx, _)
+              if result then
+                vim.lsp.handlers['textDocument/documentHighlight'](_, result, ctx, config)
+              end
+            end,
 
+            ['textDocument/definition'] = function(_, result, ctx, _)
+              local client = vim.lsp.get_client_by_id(ctx.client_id)
+
+              if not result or not client then
+                vim.notify('Error fetching metadata.', vim.log.levels.ERROR)
+                return
+              end
+
+              if result[1] and result[1].uri and string.find(result[1].uri, '^csharp:/metadata/') then
+                if uri_to_file_map[result[1].uri] and vim.fn.bufnr(uri_to_file_map[result[1].uri]) ~= -1 then
+                  result[1].uri = 'file://' .. uri_to_file_map[result[1].uri]
+                  return
+                end
+
+                uri_to_file_map[result[1].uri] = nil
+
+                -- https://github.com/razzmatazz/csharp-language-server?tab=readme-ov-file#decompile-for-your-editor--with-the-example-of-neovim
+                local res, err = client.request_sync('csharp/metadata', {
+                  textDocument = {
+                    uri = result[1].uri,
+                  },
+                }, 3000)
+
+                if err or not res or not res.result or not res.result.source then
+                  vim.notify('Error fetching metadata: ' .. (err or 'Not found'), vim.log.levels.ERROR)
+                  result.processed = true
+                  return
+                end
+
+                local source = '// Decompiled with csharp-ls\n// Assembly: ' .. res.result.assemblyName .. '\n\n' .. res.result.source
+                local temp_path = vim.fn.tempname() .. '.cs'
+                local file = io.open(temp_path, 'w')
+                if not file then
+                  vim.notify("Error fetching metadata: can't create temporary file", vim.log.levels.ERROR)
+                  result.processed = true
+                  return
+                end
+
+                file:write(source)
+                file:close()
+                --TODO: make uri name only contain assembly and type information (without origin pproject name)
+                uri_to_file_map[result[1].uri] = temp_path
+
+                result[1].uri = 'file://' .. temp_path
+              end
+            end,
+          },
+        },
+        yamlls = {
+          root_dir = getRootDir,
+        },
         lua_ls = {
+          root_dir = getRootDir,
           -- cmd = {...},
           -- filetypes = { ...},
           -- capabilities = {},
@@ -624,7 +924,6 @@ require('lazy').setup({
       }
     end,
   },
-
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
@@ -661,7 +960,7 @@ require('lazy').setup({
       },
     },
   },
-
+  { 'lewis6991/gitsigns.nvim' },
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
@@ -773,20 +1072,82 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+  {
+    'sainnhe/everforest',
+    priority = 1000,
+    init = function() end,
+  },
 
-      -- You can configure highlights by doing something like:
+  {
+    'rose-pine/neovim',
+    priority = 1000,
+    init = function() end,
+  },
+
+  {
+    'sainnhe/gruvbox-material',
+    priority = 1000,
+    init = function() end,
+  },
+
+  {
+    'Mofiqul/adwaita.nvim',
+    priority = 1000,
+    init = function() end,
+  },
+
+  {
+    'projekt0n/github-nvim-theme',
+    priority = 1000,
+    init = function() end,
+  },
+
+  {
+    'diegoulloao/neofusion.nvim',
+    priority = 1000,
+    init = function() end,
+  },
+  {
+    'catppuccin/nvim',
+    priority = 1000,
+    init = function() end,
+  },
+  {
+
+    'rafi/awesome-vim-colorschemes',
+    priority = 1000,
+    init = function() end,
+  },
+
+  {
+    'folke/tokyonight.nvim',
+    priority = 1000,
+    init = function()
+      --[[ If you want to change the colorscheme, you can do so by running:
+NOTE: light is cool
+
+set background=light
+colorscheme onehalflight
+colorscheme rose-pine-dawn
+colorscheme snow
+colorscheme stellarized
+colorscheme wildcharm
+colorscheme PaperColor
+colorscheme peachpuff
+
+NOTE: dark is cool
+
+set background=dark
+colorscheme gruvbox
+colorscheme catppuccin-macchiato 
+colorscheme rose-pine-main
+colorscheme retrobox
+colorscheme tokyonight-night
+colorscheme twilight256
+colorscheme oceanic_material
+colorscheme darkblue
+colorscheme solarized8_flat
+-]]
       vim.cmd.hi 'Comment gui=none'
     end,
   },
