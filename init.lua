@@ -400,7 +400,7 @@ require('lazy').setup({
     -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
     {
         'notelgnis/netbuild.nvim',
-        dir = '~/Projects/src/personal/nvim-plugins/netbuild.nvim',
+        -- dir = '~/Projects/src/personal/nvim-plugins/netbuild.nvim',
     },
     {
         'notelgnis/fetchfact.nvim',
