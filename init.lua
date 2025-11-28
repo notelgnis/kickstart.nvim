@@ -14,6 +14,8 @@ vim.g.DevIconsEnableFoldersOpenClose = 1
 if vim.fn.has('win32') == 1 then
     vim.g.NERDTreeDirArrowExpandable = '\u{e5ff}'
     vim.g.NERDTreeDirArrowCollapsible = '\u{e5fe}'
+    -- Fix C# icon (f81a not in Terminess, use e648)
+    vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = { cs = '\u{e648}' }
 end
 
 -- [[ Options ]]
