@@ -195,7 +195,10 @@ require('lazy').setup({
     },
 
     -- Devicons for NERDTree
-    'ryanoasis/vim-devicons',
+    {
+        'ryanoasis/vim-devicons',
+        dependencies = { 'notelgnis/nerdtree' },
+    },
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
 
     -- Barbar (табы/буферы)
