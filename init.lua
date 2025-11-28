@@ -210,7 +210,7 @@ require('lazy').setup({
                     vim.tbl_extend('force', vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols or {}, {
                         cs = '\u{e648}'
                     })
-                vim.cmd([[autocmd FileType nerdtree syn match NERDTreeCSharpIconHighlight '\u{e648}' containedin=ALL]])
+                vim.cmd([[autocmd FileType nerdtree syn match NERDTreeCSharpIconHighlight ']] .. '\u{e648}' .. [[' containedin=ALL]])
             end
         end,
     },
