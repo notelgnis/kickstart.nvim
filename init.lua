@@ -204,7 +204,12 @@ require('lazy').setup({
         init = function()
             vim.g.barbar_auto_setup = false
         end,
-        opts = {},
+        opts = {
+            focus_on_close = 'left',
+            sidebar_filetypes = {
+                nerdtree = { event = 'BufWinLeave' },
+            },
+        },
     },
 
     -- Fetchfact for dashboard footer
