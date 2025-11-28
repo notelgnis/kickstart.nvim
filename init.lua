@@ -10,6 +10,12 @@ vim.g.have_nerd_font = true
 -- Folder icons for vim-devicons (Windows disables by default)
 vim.g.DevIconsEnableFoldersOpenClose = 1
 
+-- NERDTree folder icons (Windows uses +/~ by default)
+if vim.fn.has('win32') == 1 then
+    vim.g.NERDTreeDirArrowExpandable = "\ue5ff"
+    vim.g.NERDTreeDirArrowCollapsible = "\ue5fe"
+end
+
 -- [[ Options ]]
 vim.opt.number = true
 vim.opt.relativenumber = true
