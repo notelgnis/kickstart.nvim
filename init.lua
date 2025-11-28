@@ -211,6 +211,7 @@ require('lazy').setup({
                         cs = '\u{e648}'
                     })
                 vim.cmd([[autocmd FileType nerdtree syn match NERDTreeCSharpIconHighlight ']] .. '\u{e648}' .. [[' containedin=ALL]])
+                vim.api.nvim_set_hl(0, 'NERDTreeCSharpIconHighlight', { fg = '#206040' })
             end
         end,
     },
