@@ -26,7 +26,7 @@ vim.opt.splitbelow = true
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
-vim.opt.termguicolors = false
+vim.opt.termguicolors = true
 vim.o.background = 'dark'
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
@@ -366,6 +366,7 @@ require('lazy').setup({
                     'css',
                     'yaml',
                     'bash',
+                    'dockerfile',
                     'vim',
                     'vimdoc',
                 },
