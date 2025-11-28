@@ -12,8 +12,8 @@ vim.g.DevIconsEnableFoldersOpenClose = 1
 
 -- NERDTree folder icons (Windows uses +/~ by default)
 if vim.fn.has('win32') == 1 then
-    vim.g.NERDTreeDirArrowExpandable = "\ue5ff"
-    vim.g.NERDTreeDirArrowCollapsible = "\ue5fe"
+    vim.g.NERDTreeDirArrowExpandable = '\u{e5ff}'
+    vim.g.NERDTreeDirArrowCollapsible = '\u{e5fe}'
 end
 
 -- [[ Options ]]
