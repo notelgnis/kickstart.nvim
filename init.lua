@@ -14,8 +14,6 @@ vim.g.DevIconsEnableFoldersOpenClose = 1
 if vim.fn.has('win32') == 1 then
     vim.g.NERDTreeDirArrowExpandable = '\u{e5ff}'
     vim.g.NERDTreeDirArrowCollapsible = '\u{e5fe}'
-    -- Fix C# icon (f81a not in Terminess, use e648)
-    vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = { cs = '\u{e648}' }
 end
 
 -- [[ Options ]]
@@ -206,6 +204,14 @@ require('lazy').setup({
     {
         'ryanoasis/vim-devicons',
         dependencies = { 'notelgnis/nerdtree' },
+        config = function()
+            if vim.fn.has('win32') == 1 then
+                vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols =
+                    vim.tbl_extend('force', vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols or {}, {
+                        cs = '\u{e648}'
+                    })
+            end
+        end,
     },
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
 
