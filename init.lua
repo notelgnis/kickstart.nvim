@@ -204,16 +204,6 @@ require('lazy').setup({
     {
         'ryanoasis/vim-devicons',
         dependencies = { 'notelgnis/nerdtree' },
-        config = function()
-            if vim.fn.has('win32') == 1 then
-                vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols =
-                    vim.tbl_extend('force', vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols or {}, {
-                        cs = '\u{e648}'
-                    })
-                vim.cmd([[autocmd FileType nerdtree syn match NERDTreeCSharpIconHighlight ']] .. '\u{e648}' .. [[' containedin=ALL]])
-                vim.api.nvim_set_hl(0, 'NERDTreeCSharpIconHighlight', { fg = '#206040' })
-            end
-        end,
     },
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
 
