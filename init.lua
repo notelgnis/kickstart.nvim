@@ -26,6 +26,7 @@ vim.opt.splitbelow = true
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
+vim.opt.hidden = true
 vim.opt.termguicolors = true
 vim.o.background = 'dark'
 vim.opt.tabstop = 4
