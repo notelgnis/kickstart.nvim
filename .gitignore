@@ -5,3 +5,8 @@ nvim
 
 spell/
 lazy-lock.json
+
+claude_api_key
+init.lua.bak
+init.lua.bak2
+.claude/
