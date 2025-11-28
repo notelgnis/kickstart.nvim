@@ -31,10 +31,6 @@ vim.o.background = 'dark'
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
 
--- Transparent background
-vim.api.nvim_set_hl(0, 'Normal', { ctermbg = 'NONE' })
-vim.api.nvim_set_hl(0, 'NormalFloat', { ctermbg = 'NONE' })
-vim.api.nvim_set_hl(0, 'NonText', { ctermfg = 'NONE' })
 
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -155,6 +151,26 @@ vim.opt.rtp:prepend(lazypath)
 
 -- [[ Plugins ]]
 require('lazy').setup({
+    -- Ayu тема с прозрачностью
+    {
+        'Shatur/neovim-ayu',
+        priority = 1000,
+        config = function()
+            require('ayu').setup({
+                mirage = false, -- false = dark, true = mirage
+                terminal = true,
+                overrides = {
+                    Normal = { bg = 'NONE' },
+                    NormalFloat = { bg = 'NONE' },
+                    SignColumn = { bg = 'NONE' },
+                    NvimTreeNormal = { bg = 'NONE' },
+                    LineNr = { fg = '#626A73' },  -- неактивные номера строк
+                },
+            })
+            require('ayu').colorscheme()
+        end,
+    },
+
     -- NERDTree
     {
         'notelgnis/nerdtree',
@@ -164,12 +180,32 @@ require('lazy').setup({
             vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\[" contained conceal containedin=ALL]]
             vim.cmd [[autocmd FileType nerdtree syntax match NERDTreeDirSlash #/$# containedin=NERDTreeDir conceal contained]]
             vim.cmd [[set fillchars+=vert:\ ]]
+            -- Цвет папок (Ayu orange)
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = 'nerdtree',
+                callback = function()
+                    vim.api.nvim_set_hl(0, 'NERDTreeFolderClosedIconHighlight', { fg = '#FFB454' })
+                    vim.api.nvim_set_hl(0, 'NERDTreeFolderOpendIconHighlight', { fg = '#FFB454' })
+                end,
+            })
         end,
     },
 
     -- Devicons for NERDTree
     'ryanoasis/vim-devicons',
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+
+    -- Barbar (табы/буферы)
+    {
+        'romgrk/barbar.nvim',
+        dependencies = {
+            'nvim-tree/nvim-web-devicons',
+        },
+        init = function()
+            vim.g.barbar_auto_setup = false
+        end,
+        opts = {},
+    },
 
     -- Fetchfact for dashboard footer
     {
