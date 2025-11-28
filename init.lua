@@ -7,6 +7,8 @@ vim.g.maplocalleader = ' '
 -- Nerd Font
 vim.g.have_nerd_font = true
 
+-- Folder icons for vim-devicons (Windows disables by default)
+vim.g.DevIconsEnableFoldersOpenClose = 1
 
 -- [[ Options ]]
 vim.opt.number = true
