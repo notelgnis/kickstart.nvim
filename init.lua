@@ -7,6 +7,15 @@ vim.g.maplocalleader = ' '
 -- Nerd Font
 vim.g.have_nerd_font = true
 
+-- NERDTree/devicons settings (Windows uses +/~ by default)
+if vim.fn.has('win32') == 1 then
+    vim.g.NERDTreeDirArrowExpandable = ''
+    vim.g.NERDTreeDirArrowCollapsible = ''
+end
+vim.g.WebDevIconsUnicodeDecorateFolderNodes = 1
+vim.g.DevIconsEnableFoldersOpenClose = 1
+vim.g.WebDevIconsUnicodeDecorateFolderNodesDefaultSymbol = ''
+vim.g.DevIconsDefaultFolderOpenSymbol = ''
 
 -- [[ Options ]]
 vim.opt.number = true
@@ -210,6 +219,7 @@ require('lazy').setup({
             sidebar_filetypes = {
                 nerdtree = { event = 'BufWinLeave' },
             },
+            auto_hide = false,
         },
     },
 
