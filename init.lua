@@ -210,6 +210,7 @@ require('lazy').setup({
                     vim.tbl_extend('force', vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols or {}, {
                         cs = '\u{e648}'
                     })
+                vim.api.nvim_set_hl(0, 'DevIconCs', { fg = '#596706' })
             end
         end,
     },
