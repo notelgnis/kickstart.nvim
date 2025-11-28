@@ -177,7 +177,7 @@ require('lazy').setup({
     -- NERDTree
     {
         'notelgnis/nerdtree',
-        event = 'VimEnter',
+        lazy = false,
         config = function()
             vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\]" contained conceal containedin=ALL]]
             vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\[" contained conceal containedin=ALL]]
