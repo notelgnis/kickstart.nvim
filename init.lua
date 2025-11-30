@@ -60,7 +60,16 @@ local function apply_cterm_highlights()
 end
 
 vim.keymap.set('n', '<leader>l', function()
-    vim.o.background = (vim.o.background == 'dark') and 'light' or 'dark'
+    if vim.o.background == 'dark' then
+        vim.o.background = 'light'
+        vim.cmd('colorscheme PaperColor')
+        vim.api.nvim_set_hl(0, 'NERDTreeFolderClosedIconHighlight', { fg = '#CC8030' })
+        vim.api.nvim_set_hl(0, 'NERDTreeFolderOpendIconHighlight', { fg = '#CC8030' })
+    else
+        vim.o.background = 'dark'
+        require('ayu').colorscheme()
+        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
+    end
     apply_cterm_highlights()
 end, { desc = 'Toggle Dark/Light' })
 
@@ -86,6 +95,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
         vim.defer_fn(function()
             apply_cterm_highlights()
             vim.opt.fillchars = { vert = ' ', eob = ' ' }
+            vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
         end, 1)
     end,
 })
@@ -160,7 +170,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- [[ Plugins ]]
 require('lazy').setup({
-    -- Ayu тема с прозрачностью
+    -- Ayu тема (dark) с прозрачностью
     {
         'Shatur/neovim-ayu',
         priority = 1000,
@@ -177,6 +187,25 @@ require('lazy').setup({
                 },
             })
             require('ayu').colorscheme()
+        end,
+    },
+
+    -- PaperColor тема (light)
+    {
+        'NLKNguyen/papercolor-theme',
+        priority = 1000,
+        init = function()
+            vim.g.PaperColor_Theme_Options = {
+                theme = {
+                    ['default.light'] = {
+                        override = {
+                            color10 = { '#cc0058', '233' },
+                            color14 = { '#004d99', '233' },
+                            color07 = { '#3d425c', '233' },
+                        },
+                    },
+                },
+            }
         end,
     },
 
