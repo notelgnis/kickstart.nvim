@@ -308,15 +308,26 @@ require('lazy').setup({
                     },
                 },
             }
-            -- Custom folder icon colors (red), names use theme's Directory color
-            local function apply_neotree_colors()
+            -- Custom highlights for dark theme
+            local function apply_custom_highlights()
                 local is_dark = vim.o.background == 'dark'
                 local folder_icon = is_dark and '#CC3333' or '#af0000'
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
                 vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
             end
-            apply_neotree_colors()
-            vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_neotree_colors })
+            local function apply_markdown_highlights()
+                if vim.o.background == 'dark' then
+                    local bg = '#1a1a1a'
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = bg })
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = bg })
+                    for i = 1, 6 do
+                        vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+                    end
+                end
+            end
+            apply_custom_highlights()
+            vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_custom_highlights })
+            vim.api.nvim_create_autocmd('FileType', { pattern = 'markdown', callback = apply_markdown_highlights })
         end,
         keys = {
             { '<leader>n', '<cmd>Neotree toggle<cr>', desc = 'Neo-tree toggle' },
