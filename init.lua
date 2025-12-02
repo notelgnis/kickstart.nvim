@@ -7,7 +7,6 @@ vim.g.maplocalleader = ' '
 -- Nerd Font
 vim.g.have_nerd_font = true
 
-
 -- Detect system theme (macOS)
 local function is_dark_mode()
     if vim.fn.has 'mac' == 1 then
@@ -71,7 +70,6 @@ local function apply_cterm_highlights()
         vim.cmd [[hi CursorIM guifg=#ffffff guibg=#af0000]]
     end
 end
-
 
 vim.keymap.set('n', '<leader>l', function()
     if vim.o.background == 'dark' then
@@ -253,6 +251,26 @@ require('lazy').setup({
             require('neo-tree').setup {
                 filesystem = {
                     follow_current_file = { enabled = true },
+                    filtered_items = {
+                        visible = true,
+                        hide_dotfiles = false,
+                        hide_gitignored = false,
+                    },
+                },
+                default_component_configs = {
+                    git_status = {
+                        symbols = {
+                            added = 'ﱈ',
+                            deleted = '✖',
+                            modified = '',
+                            renamed = '󰑕',
+                            untracked = '',
+                            ignored = '',
+                            unstaged = '',
+                            staged = '',
+                            conflict = '',
+                        },
+                    },
                 },
             }
             -- Custom folder colors (red icons, orange names for dark theme)
@@ -264,6 +282,9 @@ require('lazy').setup({
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryName', { fg = folder_name })
                 vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = folder_name, italic = true })
                 vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = folder_name, italic = true })
+                -- Diffview folder colors (same as neo-tree)
+                vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
+                vim.api.nvim_set_hl(0, 'DiffviewFolderName', { fg = folder_name })
             end
             apply_neotree_colors()
             vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_neotree_colors })
@@ -284,6 +305,23 @@ require('lazy').setup({
         config = function()
             require('lsp-file-operations').setup()
         end,
+    },
+
+    -- Diffview (git diff viewer)
+    {
+        'sindrets/diffview.nvim',
+        opts = {
+            view = {
+                merge_tool = {
+                    layout = 'diff3_mixed',
+                },
+            },
+        },
+        keys = {
+            { '<leader>do', '<cmd>DiffviewOpen<cr>', desc = 'Diff open' },
+            { '<leader>dh', '<cmd>DiffviewFileHistory %<cr>', desc = 'Diff file history' },
+            { '<leader>dc', '<cmd>DiffviewClose<cr>', desc = 'Diff close' },
+        },
     },
 
     -- Window picker for neo-tree
