@@ -69,6 +69,7 @@ vim.opt.termguicolors = true
 vim.o.background = 'dark'
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
+vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:ver50-iCursor,r-cr:hor20,o:hor50'
 
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -87,6 +88,10 @@ local function apply_cterm_highlights()
         vim.cmd [[hi CursorLineNr ctermfg=27  ctermbg=NONE]]
         vim.cmd [[hi DashboardHeader ctermfg=0 guifg=#5c6773]]
         vim.cmd [[hi DashboardFooter ctermfg=4 guifg=#5C6773]]
+        -- Cursor visibility for light theme
+        vim.cmd [[hi Cursor guifg=#ffffff guibg=#005f87]]
+        vim.cmd [[hi iCursor guifg=#ffffff guibg=#ff0000]]
+        vim.cmd [[hi CursorIM guifg=#ffffff guibg=#af0000]]
     end
 end
 
@@ -593,6 +598,37 @@ require('lazy').setup({
                 json = { 'prettier' },
                 markdown = { 'prettier' },
             },
+        },
+    },
+
+    -- GitHub Copilot
+    {
+        'github/copilot.vim',
+        lazy = false,
+    },
+
+    -- Claude Code integration (WebSocket MCP)
+    {
+        'coder/claudecode.nvim',
+        dependencies = { 'folke/snacks.nvim' },
+        config = true,
+        keys = {
+            { '<leader>a', nil, desc = 'AI/Claude Code' },
+            { '<leader>ac', '<cmd>ClaudeCode<cr>', desc = 'Toggle Claude' },
+            { '<leader>af', '<cmd>ClaudeCodeFocus<cr>', desc = 'Focus Claude' },
+            { '<leader>ar', '<cmd>ClaudeCode --resume<cr>', desc = 'Resume Claude' },
+            { '<leader>aC', '<cmd>ClaudeCode --continue<cr>', desc = 'Continue Claude' },
+            { '<leader>am', '<cmd>ClaudeCodeSelectModel<cr>', desc = 'Select Claude model' },
+            { '<leader>ab', '<cmd>ClaudeCodeAdd %<cr>', desc = 'Add current buffer' },
+            { '<leader>as', '<cmd>ClaudeCodeSend<cr>', mode = 'v', desc = 'Send to Claude' },
+            {
+                '<leader>as',
+                '<cmd>ClaudeCodeTreeAdd<cr>',
+                desc = 'Add file',
+                ft = { 'NvimTree', 'neo-tree', 'oil', 'minifiles', 'netrw', 'nerdtree' },
+            },
+            { '<leader>aa', '<cmd>ClaudeCodeDiffAccept<cr>', desc = 'Accept diff' },
+            { '<leader>ad', '<cmd>ClaudeCodeDiffDeny<cr>', desc = 'Deny diff' },
         },
     },
 
