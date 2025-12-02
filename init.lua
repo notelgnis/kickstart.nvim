@@ -1,4 +1,4 @@
--- Minimal Neovim config: Dashboard + NERDTree + Statusline
+-- Minimal Neovim config: Dashboard + Neo-tree + Statusline
 
 -- Leader key
 vim.g.mapleader = ' '
@@ -7,29 +7,6 @@ vim.g.maplocalleader = ' '
 -- Nerd Font
 vim.g.have_nerd_font = true
 
--- Folder icons for vim-devicons (Windows disables by default)
-vim.g.DevIconsEnableFoldersOpenClose = 1
-
--- Override icons in vim-devicons to match nvim-web-devicons
-vim.g.WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {
-    cs = '󰌛', -- C#
-    http = '󰖟', -- HTTP requests
-}
-vim.g.WebDevIconsUnicodeDecorateFileNodesExactSymbols = {
-    ['Dockerfile'] = '󰡨',
-    ['dockerfile'] = '󰡨',
-    ['docker-compose.yml'] = '󰡨',
-    ['docker-compose.yaml'] = '󰡨',
-}
-
--- Reduce spacing between icon and filename in NERDTree
-vim.g.WebDevIconsNerdTreeAfterGlyphPadding = ''
-
--- NERDTree folder icons (Windows uses +/~ by default)
-if vim.fn.has 'win32' == 1 then
-    vim.g.NERDTreeDirArrowExpandable = '\u{e5ff}'
-    vim.g.NERDTreeDirArrowCollapsible = '\u{e5fe}'
-end
 
 -- Detect system theme (macOS)
 local function is_dark_mode()
@@ -95,38 +72,6 @@ local function apply_cterm_highlights()
     end
 end
 
--- Restore all NERDTree icon highlights after theme change
-local function apply_nerdtree_highlights()
-    local is_dark = vim.o.background == 'dark'
-    -- Folder icons (different colors for dark/light)
-    local folder_color = is_dark and '#CC3333' or '#af0000'
-    vim.api.nvim_set_hl(0, 'NERDTreeFolderClosedIconHighlight', { fg = folder_color })
-    vim.api.nvim_set_hl(0, 'NERDTreeFolderOpendIconHighlight', { fg = folder_color })
-    -- All other icon highlights from nerdtree.vim
-    vim.api.nvim_set_hl(0, 'NERDTreeCSharpIconHighlight', { fg = '#206040' })
-    vim.api.nvim_set_hl(0, 'NERDTreeArrowClosedIconHighlight', { fg = '#b3b3b3' })
-    vim.api.nvim_set_hl(0, 'NERDTreeArrowOpenedIconHighlight', { fg = '#b3b3b3' })
-    vim.api.nvim_set_hl(0, 'NERDTreeYamlIconHighlight', { fg = '#2e5cb8' })
-    vim.api.nvim_set_hl(0, 'NERDTreeLicenseIconHighlight', { fg = '#ffcc00' })
-    vim.api.nvim_set_hl(0, 'NERDTreeSolutionIconHighlight', { fg = '#6600cc' })
-    vim.api.nvim_set_hl(0, 'NERDTreeGeneralIconHighlight', { fg = '#666666' })
-    vim.api.nvim_set_hl(0, 'NERDTreePicIconHighlight', { fg = '#336699' })
-    vim.api.nvim_set_hl(0, 'NERDTreeJsonIconHighlight', { fg = is_dark and '#ccff33' or '#7a9900' })
-    vim.api.nvim_set_hl(0, 'NERDTreeMdIconHighlight', { fg = '#669999' })
-    vim.api.nvim_set_hl(0, 'NERDTreePrjIconHighlight', { fg = '#b366ff' })
-    vim.api.nvim_set_hl(0, 'NERDTreeLuaIconHighlight', { fg = '#9999ff' })
-    vim.api.nvim_set_hl(0, 'NERDTreeXmlIconHighlight', { fg = '#00ccff' })
-    vim.api.nvim_set_hl(0, 'NERDTreeDockerIconHighlight', { fg = '#458EE6' })
-    vim.api.nvim_set_hl(0, 'NERDTreeHttpIconHighlight', { fg = '#008EC7' })
-    -- Folder names
-    if is_dark then
-        vim.api.nvim_set_hl(0, 'NERDTreeDir', { fg = '#FFB454' })
-        vim.api.nvim_set_hl(0, 'Directory', { fg = '#FFB454' })
-    else
-        vim.api.nvim_set_hl(0, 'NERDTreeDir', { fg = '#005f87' })
-        vim.api.nvim_set_hl(0, 'Directory', { fg = '#005f87' })
-    end
-end
 
 vim.keymap.set('n', '<leader>l', function()
     if vim.o.background == 'dark' then
@@ -138,36 +83,8 @@ vim.keymap.set('n', '<leader>l', function()
         vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
     end
     apply_cterm_highlights()
-    -- Refresh NERDTree syntax first
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[buf].filetype == 'nerdtree' then
-            vim.api.nvim_buf_call(buf, function()
-                vim.cmd 'syntax clear'
-                vim.cmd 'runtime syntax/nerdtree.vim'
-            end)
-        end
-    end
-    -- Then apply our custom highlights on top
-    apply_nerdtree_highlights()
-    -- Refresh barbar highlights
     vim.cmd 'doautocmd ColorScheme'
 end, { desc = 'Toggle Dark/Light' })
-
--- NERDTree toggle
-local nerdTreeToggle = function()
-    vim.cmd [[NERDTreeToggle]]
-    vim.cmd [[hi NonText guifg=bg]]
-    apply_nerdtree_highlights()
-end
-vim.keymap.set('n', '<leader>n', nerdTreeToggle, { desc = '[N]ERDTree Toggle' })
-
--- Apply highlights when NERDTree opens
-vim.api.nvim_create_autocmd('FileType', {
-    pattern = 'nerdtree',
-    callback = function()
-        vim.defer_fn(apply_nerdtree_highlights, 10)
-    end,
-})
 
 -- Highlight on yank
 vim.api.nvim_create_autocmd('TextYankPost', {
@@ -194,7 +111,6 @@ vim.api.nvim_create_autocmd('VimEnter', {
     callback = function()
         vim.defer_fn(function()
             apply_cterm_highlights()
-            apply_nerdtree_highlights()
             vim.opt.fillchars = { vert = ' ', eob = ' ' }
             if vim.g.system_theme_is_dark then
                 vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
@@ -323,17 +239,68 @@ require('lazy').setup({
         end,
     },
 
-    -- NERDTree
+    -- Neo-tree (file explorer)
     {
-        'notelgnis/nerdtree',
-        branch = 'custom-tweaks',
+        'nvim-neo-tree/neo-tree.nvim',
+        branch = 'v3.x',
         lazy = false,
-        dependencies = { { 'ryanoasis/vim-devicons', lazy = false } },
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'MunifTanjim/nui.nvim',
+            'nvim-tree/nvim-web-devicons',
+        },
         config = function()
-            vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\]" contained conceal containedin=ALL]]
-            vim.cmd [[autocmd FileType nerdtree syntax match hideBracketsInNerdTree "\[" contained conceal containedin=ALL]]
-            vim.cmd [[autocmd FileType nerdtree syntax match NERDTreeDirSlash #/$# containedin=NERDTreeDir conceal contained]]
-            vim.cmd [[set fillchars+=vert:\ ]]
+            require('neo-tree').setup {
+                filesystem = {
+                    follow_current_file = { enabled = true },
+                },
+            }
+            -- Custom folder colors (red icons, orange names for dark theme)
+            local function apply_neotree_colors()
+                local is_dark = vim.o.background == 'dark'
+                local folder_icon = is_dark and '#CC3333' or '#af0000'
+                local folder_name = is_dark and '#FFB454' or '#005f87'
+                vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
+                vim.api.nvim_set_hl(0, 'NeoTreeDirectoryName', { fg = folder_name })
+                vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = folder_name, italic = true })
+                vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = folder_name, italic = true })
+            end
+            apply_neotree_colors()
+            vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_neotree_colors })
+        end,
+        keys = {
+            { '<leader>n', '<cmd>Neotree toggle<cr>', desc = 'Neo-tree toggle' },
+            { '<leader>e', '<cmd>Neotree reveal<cr>', desc = 'Neo-tree reveal file' },
+        },
+    },
+
+    -- LSP file operations (auto-update imports on rename)
+    {
+        'antosha417/nvim-lsp-file-operations',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'nvim-neo-tree/neo-tree.nvim',
+        },
+        config = function()
+            require('lsp-file-operations').setup()
+        end,
+    },
+
+    -- Window picker for neo-tree
+    {
+        's1n7ax/nvim-window-picker',
+        version = '2.*',
+        config = function()
+            require('window-picker').setup {
+                filter_rules = {
+                    include_current_win = false,
+                    autoselect_one = true,
+                    bo = {
+                        filetype = { 'neo-tree', 'neo-tree-popup', 'notify' },
+                        buftype = { 'terminal', 'quickfix' },
+                    },
+                },
+            }
         end,
     },
     { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
@@ -383,7 +350,7 @@ require('lazy').setup({
         opts = {
             focus_on_close = 'left',
             sidebar_filetypes = {
-                nerdtree = { event = 'BufWinLeave' },
+                ['neo-tree'] = { event = 'BufWinLeave' },
             },
             auto_hide = false,
         },
@@ -607,8 +574,18 @@ require('lazy').setup({
         lazy = false,
         opts = {
             suppressed_dirs = { '~/', '~/Downloads', '~/Desktop', '/' },
-            pre_save_cmds = { 'NERDTreeClose' },
-            post_restore_cmds = { 'NERDTree | wincmd p' },
+            pre_save_cmds = {
+                function()
+                    pcall(vim.cmd, 'Neotree close')
+                end,
+            },
+            post_restore_cmds = {
+                function()
+                    vim.defer_fn(function()
+                        pcall(vim.cmd, 'Neotree show')
+                    end, 50)
+                end,
+            },
         },
         keys = {
             { '<leader>ss', '<cmd>SessionSave<cr>', desc = 'Save session' },
@@ -627,6 +604,7 @@ require('lazy').setup({
     {
         'coder/claudecode.nvim',
         dependencies = { 'folke/snacks.nvim' },
+        lazy = false,
         config = true,
         keys = {
             { '<leader>a', nil, desc = 'AI/Claude Code' },
@@ -654,13 +632,19 @@ require('lazy').setup({
         dependencies = { 'rafamadriz/friendly-snippets' },
         version = '*',
         opts = {
-            keymap = { preset = 'default' },
+            keymap = {
+                preset = 'default',
+                ['<CR>'] = { 'accept', 'fallback' },
+            },
             appearance = {
                 use_nvim_cmp_as_default = true,
                 nerd_font_variant = 'mono',
             },
             sources = {
                 default = { 'lsp', 'path', 'snippets', 'buffer' },
+            },
+            completion = {
+                accept = { auto_brackets = { enabled = false } },
             },
         },
     },
