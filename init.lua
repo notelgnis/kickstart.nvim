@@ -299,11 +299,11 @@ require('lazy').setup({
                             deleted = '✖',
                             modified = '',
                             renamed = '󰑕',
-                            untracked = '',
+                            untracked = '+',
                             ignored = '',
-                            unstaged = '',
-                            staged = '',
-                            conflict = '',
+                            unstaged = '',
+                            staged = '',
+                            conflict = '',
                         },
                     },
                 },
@@ -314,6 +314,10 @@ require('lazy').setup({
                 local folder_icon = is_dark and '#CC3333' or '#af0000'
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
                 vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
+                if is_dark then
+                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#161616' })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = '#161616', fg = '#CC3333' })
+                end
             end
             local function apply_markdown_highlights()
                 if vim.o.background == 'dark' then
