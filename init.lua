@@ -561,6 +561,29 @@ require('lazy').setup({
         opts = {},
     },
 
+    -- HTTP client (REST API requests from .http files)
+    {
+        'mistweaverco/kulala.nvim',
+        ft = { 'http' },
+        opts = {
+            icons = {
+                inlay = {
+                    loading = '󰔟',
+                    done = '✓',
+                    error = '✗',
+                },
+                errorHighlight = 'DiagnosticError',
+                doneHighlight = 'DiagnosticOk',
+            },
+        },
+        keys = {
+            { '<leader>hr', function() require('kulala').run() end, desc = 'HTTP run request', ft = 'http' },
+            { '<leader>ha', function() require('kulala').run_all() end, desc = 'HTTP run all', ft = 'http' },
+            { '<leader>hp', function() require('kulala').jump_prev() end, desc = 'HTTP prev request', ft = 'http' },
+            { '<leader>hn', function() require('kulala').jump_next() end, desc = 'HTTP next request', ft = 'http' },
+        },
+    },
+
     -- Image viewer (для Ghostty/Kitty)
     {
         'folke/snacks.nvim',
