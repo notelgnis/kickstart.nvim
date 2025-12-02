@@ -77,8 +77,25 @@ vim.keymap.set('n', '<leader>l', function()
         vim.cmd 'colorscheme PaperColor'
     else
         vim.o.background = 'dark'
-        require('ayu').colorscheme()
-        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
+        vim.cmd 'colorscheme gruvbox'
+        -- Override background
+        local bg = '#1a1a1a'
+        local code_bg = '#1a1a1a'
+        vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
+        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
+        vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
+        vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
+        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = bg })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = bg })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = bg })
+        vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = bg, fg = bg })
+        -- Markdown code blocks background
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = code_bg })
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = code_bg })
+        -- Remove header background highlights
+        for i = 1, 6 do
+            vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+        end
     end
     apply_cterm_highlights()
     vim.cmd 'doautocmd ColorScheme'
@@ -192,31 +209,49 @@ vim.opt.rtp:prepend(lazypath)
 
 -- [[ Plugins ]]
 require('lazy').setup({
-    -- Ayu тема (dark)
+    -- Gruvbox тема (dark)
     {
-        'Shatur/neovim-ayu',
+        'morhetz/gruvbox',
         priority = 1000,
         config = function()
-            require('ayu').setup {
-                mirage = false, -- false = dark, true = mirage
-                terminal = true,
-                overrides = {
-                    Normal = { bg = '#1a1a1a' },
-                    NormalFloat = { bg = '#1a1a1a' },
-                    SignColumn = { bg = '#1a1a1a' },
-                    NvimTreeNormal = { bg = '#1a1a1a' },
-                    LineNr = { fg = '#626A73' }, -- неактивные номера строк
-                },
-            }
+            vim.g.gruvbox_contrast_dark = 'hard'
+            vim.g.gruvbox_italic = 1
+
             -- Apply theme based on system preference
             if vim.g.system_theme_is_dark then
-                require('ayu').colorscheme()
+                vim.cmd 'colorscheme gruvbox'
+                -- Override background after theme loads
+                local bg = '#1a1a1a'
+                local code_bg = '#1a1a1a'
+                vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
+                vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
+                vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
+                vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = bg })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = bg })
+                vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = bg, fg = bg })
+                -- Markdown code blocks background
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = code_bg })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = code_bg })
+                -- Remove header background highlights
+                for i = 1, 6 do
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+                end
             else
                 vim.o.background = 'light'
                 vim.cmd 'colorscheme PaperColor'
             end
         end,
     },
+
+    -- Альтернативные темы
+    { 'Shatur/neovim-ayu', lazy = true },
+    { 'shaunsingh/nord.nvim', lazy = true },
+    { 'sainnhe/everforest', lazy = true },
+    { 'joshdick/onedark.vim', lazy = true },
+    { 'catppuccin/nvim', name = 'catppuccin', lazy = true },
+    { 'rebelot/kanagawa.nvim', lazy = true },
+    { 'rose-pine/neovim', name = 'rose-pine', lazy = true },
 
     -- PaperColor тема (light)
     {
@@ -273,18 +308,12 @@ require('lazy').setup({
                     },
                 },
             }
-            -- Custom folder colors (red icons, orange names for dark theme)
+            -- Custom folder icon colors (red), names use theme's Directory color
             local function apply_neotree_colors()
                 local is_dark = vim.o.background == 'dark'
                 local folder_icon = is_dark and '#CC3333' or '#af0000'
-                local folder_name = is_dark and '#FFB454' or '#005f87'
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
-                vim.api.nvim_set_hl(0, 'NeoTreeDirectoryName', { fg = folder_name })
-                vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = folder_name, italic = true })
-                vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = folder_name, italic = true })
-                -- Diffview folder colors (same as neo-tree)
                 vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
-                vim.api.nvim_set_hl(0, 'DiffviewFolderName', { fg = folder_name })
             end
             apply_neotree_colors()
             vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_neotree_colors })
@@ -379,6 +408,7 @@ require('lazy').setup({
     -- Barbar (табы/буферы)
     {
         'romgrk/barbar.nvim',
+        lazy = false,
         dependencies = {
             'nvim-tree/nvim-web-devicons',
         },
@@ -391,6 +421,10 @@ require('lazy').setup({
                 ['neo-tree'] = { event = 'BufWinLeave' },
             },
             auto_hide = false,
+        },
+        keys = {
+            { '<leader>bo', '<cmd>BufferCloseAllButCurrent<cr>', desc = 'Close other buffers' },
+            { '<leader>bc', '<cmd>BufferClose<cr>', desc = 'Close buffer' },
         },
     },
 
