@@ -1,0 +1,13 @@
+Dockerfile
+.dockerignore
+.git
+.claude
+.github
+*.md
+*.bak*
+*api_key*
+*token*
+*secret*
+.nvimlog
+.stylua.toml
+doc

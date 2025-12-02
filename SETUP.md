@@ -59,7 +59,13 @@ brew install node
 ```
 Нужен для: typescript-language-server, vscode-json-language-server, prettier
 
-## 6. Первый запуск Neovim
+## 6. Mermaid CLI (для рендера диаграмм)
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+Нужен для рендера mermaid диаграмм в markdown файлах.
+
+## 7. Первый запуск Neovim
 ```bash
 nvim
 ```
@@ -74,7 +80,7 @@ nvim
 - `:Mason` — статус LSP серверов
 - `:checkhealth` — общая диагностика
 
-## 7. LSP серверы (устанавливаются автоматически через Mason)
+## 8. LSP серверы (устанавливаются автоматически через Mason)
 - lua_ls — Lua
 - omnisharp — C# (с декомпиляцией через omnisharp-extended-lsp.nvim)
 - ts_ls — JavaScript/TypeScript
