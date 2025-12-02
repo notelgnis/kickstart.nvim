@@ -601,6 +601,22 @@ require('lazy').setup({
         },
     },
 
+    -- Auto Session (save/restore buffers, windows, etc.)
+    {
+        'rmagatti/auto-session',
+        lazy = false,
+        opts = {
+            suppressed_dirs = { '~/', '~/Downloads', '~/Desktop', '/' },
+            pre_save_cmds = { 'NERDTreeClose' },
+            post_restore_cmds = { 'NERDTree | wincmd p' },
+        },
+        keys = {
+            { '<leader>ss', '<cmd>SessionSave<cr>', desc = 'Save session' },
+            { '<leader>sr', '<cmd>SessionRestore<cr>', desc = 'Restore session' },
+            { '<leader>sd', '<cmd>SessionDelete<cr>', desc = 'Delete session' },
+        },
+    },
+
     -- GitHub Copilot
     {
         'github/copilot.vim',
