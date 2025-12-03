@@ -284,6 +284,9 @@ require('lazy').setup({
         },
         config = function()
             require('neo-tree').setup {
+                source_selector = {
+                    statusline = false,
+                },
                 filesystem = {
                     follow_current_file = { enabled = true },
                     filtered_items = {
@@ -318,6 +321,26 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#161616' })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = '#161616', fg = '#CC3333' })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = '#444444' })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = '#191919', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = '#191919', fg = '#989719' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = '#191919', fg = '#ebdbb2' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = '#191919', fg = '#989719' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = '#191919', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = '#191919', fg = '#191919' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#ebdbb2', fg = '#191919', bold = true })
+                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = '#161616' })
+                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = '#161616', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = '#161616', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = '#161616', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = '#161616', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = '#161616' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = '#161616', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = '#161616', fg = '#ebdbb2' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = '#161616', fg = '#ebdbb2' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = '#161616', fg = '#ebdbb2' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = '#161616', fg = '#fabd2f' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = '#161616' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = '#161616', fg = '#fb4934' })
                 end
             end
             local function apply_markdown_highlights()
@@ -333,6 +356,9 @@ require('lazy').setup({
             apply_custom_highlights()
             vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_custom_highlights })
             vim.api.nvim_create_autocmd('FileType', { pattern = 'markdown', callback = apply_markdown_highlights })
+            vim.api.nvim_create_autocmd('FileType', { pattern = 'neo-tree', callback = function()
+                vim.opt_local.statusline = ' '
+            end })
         end,
         keys = {
             { '<leader>n', '<cmd>Neotree toggle<cr>', desc = 'Neo-tree toggle' },
@@ -437,6 +463,9 @@ require('lazy').setup({
                 ['neo-tree'] = { event = 'BufWinLeave' },
             },
             auto_hide = false,
+            icons = {
+                inactive = { separator = { left = '', right = '' } },
+            },
         },
         keys = {
             { '<leader>bo', '<cmd>BufferCloseAllButCurrent<cr>', desc = 'Close other buffers' },
