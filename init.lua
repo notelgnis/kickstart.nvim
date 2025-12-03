@@ -45,7 +45,7 @@ vim.opt.termguicolors = true
 vim.o.background = 'dark'
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
-vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:ver50-iCursor,r-cr:hor20,o:hor50'
+vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:block-iCursor-blinkon500-blinkoff500,r-cr:hor20,o:hor50'
 
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -60,14 +60,14 @@ local function apply_cterm_highlights()
         vim.cmd [[hi CursorLineNr ctermfg=208 ctermbg=NONE]]
         vim.cmd [[hi DashboardHeader ctermfg=223 guifg=#5a6570]]
         vim.cmd [[hi DashboardFooter ctermfg=12 guifg=#5C6773]]
+        -- Red cursor in insert mode for dark theme
+        vim.cmd [[hi iCursor guifg=#ffffff guibg=#FF0000]]
     else
         vim.cmd [[hi CursorLineNr ctermfg=27  ctermbg=NONE]]
         vim.cmd [[hi DashboardHeader ctermfg=0 guifg=#5c6773]]
         vim.cmd [[hi DashboardFooter ctermfg=4 guifg=#5C6773]]
-        -- Cursor visibility for light theme
-        vim.cmd [[hi Cursor guifg=#ffffff guibg=#005f87]]
-        vim.cmd [[hi iCursor guifg=#ffffff guibg=#ff0000]]
-        vim.cmd [[hi CursorIM guifg=#ffffff guibg=#af0000]]
+        -- Red cursor in insert mode for light theme
+        vim.cmd [[hi iCursor guifg=#ffffff guibg=#FF0000]]
     end
 end
 
@@ -79,8 +79,8 @@ vim.keymap.set('n', '<leader>l', function()
         vim.o.background = 'dark'
         vim.cmd 'colorscheme gruvbox'
         -- Override background
-        local bg = '#1a1a1a'
-        local code_bg = '#1a1a1a'
+        local bg = '#191919'
+        local code_bg = '#191919'
         vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
         vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
         vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
@@ -128,7 +128,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
             apply_cterm_highlights()
             vim.opt.fillchars = { vert = ' ', eob = ' ' }
             if vim.g.system_theme_is_dark then
-                vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#1a1a1a' })
+                vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#191919' })
             end
         end, 50)
     end,
@@ -221,8 +221,8 @@ require('lazy').setup({
             if vim.g.system_theme_is_dark then
                 vim.cmd 'colorscheme gruvbox'
                 -- Override background after theme loads
-                local bg = '#1a1a1a'
-                local code_bg = '#1a1a1a'
+                local bg = '#191919'
+                local code_bg = '#191919'
                 vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
                 vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
                 vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
@@ -296,7 +296,7 @@ require('lazy').setup({
                     git_status = {
                         symbols = {
                             added = 'ﱈ',
-                            deleted = '✖',
+                            deleted = '',
                             modified = '',
                             renamed = '󰑕',
                             untracked = '+',
@@ -317,11 +317,12 @@ require('lazy').setup({
                 if is_dark then
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#161616' })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = '#161616', fg = '#CC3333' })
+                    vim.api.nvim_set_hl(0, 'LineNr', { fg = '#444444' })
                 end
             end
             local function apply_markdown_highlights()
                 if vim.o.background == 'dark' then
-                    local bg = '#1a1a1a'
+                    local bg = '#191919'
                     vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = bg })
                     vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = bg })
                     for i = 1, 6 do
@@ -577,10 +578,38 @@ require('lazy').setup({
             },
         },
         keys = {
-            { '<leader>hr', function() require('kulala').run() end, desc = 'HTTP run request', ft = 'http' },
-            { '<leader>ha', function() require('kulala').run_all() end, desc = 'HTTP run all', ft = 'http' },
-            { '<leader>hp', function() require('kulala').jump_prev() end, desc = 'HTTP prev request', ft = 'http' },
-            { '<leader>hn', function() require('kulala').jump_next() end, desc = 'HTTP next request', ft = 'http' },
+            {
+                '<leader>hr',
+                function()
+                    require('kulala').run()
+                end,
+                desc = 'HTTP run request',
+                ft = 'http',
+            },
+            {
+                '<leader>ha',
+                function()
+                    require('kulala').run_all()
+                end,
+                desc = 'HTTP run all',
+                ft = 'http',
+            },
+            {
+                '<leader>hp',
+                function()
+                    require('kulala').jump_prev()
+                end,
+                desc = 'HTTP prev request',
+                ft = 'http',
+            },
+            {
+                '<leader>hn',
+                function()
+                    require('kulala').jump_next()
+                end,
+                desc = 'HTTP next request',
+                ft = 'http',
+            },
         },
     },
 
