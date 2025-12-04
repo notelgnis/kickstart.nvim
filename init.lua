@@ -341,6 +341,40 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = '#161616', fg = '#fabd2f' })
                     vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = '#161616' })
                     vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = '#161616', fg = '#fb4934' })
+                else
+                    -- Light theme (pencil-light colors)
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = '#eeeeee', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = '#eeeeee', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = '#eeeeee', fg = '#eeeeee' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = '#eeeeee', fg = '#eeeeee' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#10a778', fg = '#eeeeee', bold = true })
+                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = '#e0e0e0' })
+                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = '#e0e0e0', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = '#e0e0e0', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = '#e0e0e0', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = '#e0e0e0', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = '#e0e0e0' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = '#e0e0e0', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = '#e0e0e0', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = '#e0e0e0', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = '#e0e0e0', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = '#e0e0e0', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = '#e0e0e0' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = '#e0e0e0', fg = '#d75f5f' })
+                    vim.api.nvim_set_hl(0, 'SidekickChat', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferVisible', { bg = '#e0e0e0', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIndex', { bg = '#e0e0e0', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleMod', { bg = '#e0e0e0', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleSign', { bg = '#e0e0e0', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIcon', { bg = '#e0e0e0' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleTarget', { bg = '#e0e0e0', fg = '#d75f5f' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { bg = '#eeeeee', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTerm', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTermNC', { bg = '#eeeeee', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'Terminal', { bg = '#eeeeee', fg = '#424242' })
                 end
             end
             local function apply_markdown_highlights()
@@ -356,9 +390,13 @@ require('lazy').setup({
             apply_custom_highlights()
             vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_custom_highlights })
             vim.api.nvim_create_autocmd('FileType', { pattern = 'markdown', callback = apply_markdown_highlights })
-            vim.api.nvim_create_autocmd('FileType', { pattern = 'neo-tree', callback = function()
-                vim.opt_local.statusline = ' '
-            end })
+            vim.api.nvim_create_autocmd({ 'BufEnter', 'WinEnter' }, {
+                callback = function()
+                    if vim.bo.filetype == 'neo-tree' then
+                        vim.wo.statusline = ' '
+                    end
+                end,
+            })
         end,
         keys = {
             { '<leader>n', '<cmd>Neotree toggle<cr>', desc = 'Neo-tree toggle' },
@@ -472,6 +510,7 @@ require('lazy').setup({
             { '<leader>bc', '<cmd>BufferClose<cr>', desc = 'Close buffer' },
         },
     },
+
 
     -- Fetchfact for dashboard footer
     {
@@ -645,6 +684,7 @@ require('lazy').setup({
     -- Image viewer (для Ghostty/Kitty)
     {
         'folke/snacks.nvim',
+        priority = 1000,
         opts = {
             image = { enabled = true },
         },
@@ -885,6 +925,7 @@ require('lazy').setup({
                     'mermaid',
                     'html',
                     'css',
+                    'scss',
                     'yaml',
                     'bash',
                     'dockerfile',
