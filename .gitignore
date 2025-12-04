@@ -11,3 +11,6 @@ init.lua.bak
 init.lua.bak2
 .claude/
 AGENTS.md
+*.log
+.nvimlog
+test-*.md
