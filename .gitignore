@@ -9,6 +9,7 @@ lazy-lock.json
 claude_api_key
 init.lua.bak
 init.lua.bak2
+init.lua.telemetry.bak
 .claude/
 AGENTS.md
 *.log
