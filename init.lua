@@ -77,11 +77,12 @@ vim.keymap.set('n', '<leader>l', function()
         vim.cmd 'colorscheme PaperColor'
     else
         vim.o.background = 'dark'
-        vim.cmd 'colorscheme gruvbox'
+        vim.cmd 'colorscheme telemetry'
         -- Override background
-        local bg = '#191919'
+        local bg = '#0F1B1D'
+        local fg = '#9abfbe'
         local code_bg = '#191919'
-        vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
+        vim.api.nvim_set_hl(0, 'Normal', { bg = bg, fg = fg })
         vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
         vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
         vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
@@ -128,7 +129,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
             apply_cterm_highlights()
             vim.opt.fillchars = { vert = ' ', eob = ' ' }
             if vim.g.system_theme_is_dark then
-                vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#191919' })
+                vim.api.nvim_set_hl(0, 'WinSeparator', { bg = '#0F1B1D' })
             end
         end, 50)
     end,
@@ -219,11 +220,12 @@ require('lazy').setup({
 
             -- Apply theme based on system preference
             if vim.g.system_theme_is_dark then
-                vim.cmd 'colorscheme gruvbox'
+                vim.cmd 'colorscheme telemetry'
                 -- Override background after theme loads
-                local bg = '#191919'
+                local bg = '#0F1B1D'
+                local fg = '#9abfbe'
                 local code_bg = '#191919'
-                vim.api.nvim_set_hl(0, 'Normal', { bg = bg })
+                vim.api.nvim_set_hl(0, 'Normal', { bg = bg, fg = fg })
                 vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
                 vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
                 vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
@@ -272,6 +274,41 @@ require('lazy').setup({
         end,
     },
 
+    -- Icons (must load first)
+    {
+        'nvim-tree/nvim-web-devicons',
+        enabled = vim.g.have_nerd_font,
+        lazy = false,
+        priority = 999,
+        config = function()
+            require('nvim-web-devicons').setup {
+                default = true,
+                override_by_extension = {
+                    ['md'] = {
+                        icon = '',
+                        color = '#d49a4f',
+                        cterm_color = '179',
+                        name = 'Md',
+                    },
+                    ['sql'] = {
+                        icon = '',
+                        color = '#d49a4f',
+                        cterm_color = '179',
+                        name = 'Sql',
+                    },
+                },
+                override_by_filename = {
+                    ['README.md'] = {
+                        icon = '',
+                        color = '#8dac8b',
+                        cterm_color = '108',
+                        name = 'Readme',
+                    },
+                },
+            }
+        end,
+    },
+
     -- Neo-tree (file explorer)
     {
         'nvim-neo-tree/neo-tree.nvim',
@@ -314,33 +351,42 @@ require('lazy').setup({
             -- Custom highlights for dark theme
             local function apply_custom_highlights()
                 local is_dark = vim.o.background == 'dark'
-                local folder_icon = is_dark and '#CC3333' or '#af0000'
+                local folder_icon = is_dark and '#c27166' or '#af0000'
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
                 vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
                 if is_dark then
-                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = '#161616' })
-                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = '#161616', fg = '#CC3333' })
-                    vim.api.nvim_set_hl(0, 'LineNr', { fg = '#444444' })
-                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = '#191919', fg = '#888888' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = '#191919', fg = '#989719' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = '#191919', fg = '#ebdbb2' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = '#191919', fg = '#989719' })
-                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = '#191919', fg = '#888888' })
-                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = '#191919', fg = '#191919' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#ebdbb2', fg = '#191919', bold = true })
-                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = '#161616' })
-                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = '#161616', fg = '#666666' })
-                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = '#161616', fg = '#666666' })
-                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = '#161616', fg = '#666666' })
-                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = '#161616', fg = '#666666' })
-                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = '#161616' })
-                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = '#161616', fg = '#666666' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = '#161616', fg = '#ebdbb2' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = '#161616', fg = '#ebdbb2' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = '#161616', fg = '#ebdbb2' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = '#161616', fg = '#fabd2f' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = '#161616' })
-                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = '#161616', fg = '#fb4934' })
+                    -- Telemetry theme colors
+                    local bg = '#0F1B1D'
+                    local bg_alt = '#162224'
+                    local fg = '#e0f0ef'
+                    local grey = '#6b8d94'
+                    local green = '#8dac8b'
+                    local yellow = '#F4AE59'
+                    local red = '#c27166'
+                    local cyan = '#93bfc2'
+                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = bg_alt, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = bg, fg = grey })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = bg, fg = green })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = bg, fg = '#ed9366' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = bg, fg = green })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = bg, fg = bg })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = bg, fg = bg })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = yellow, fg = bg, bold = true })
+                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = bg_alt, fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = bg_alt, fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = bg_alt, fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = bg_alt, fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = bg_alt, fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = bg_alt, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = bg_alt, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = bg_alt, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = bg_alt, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = bg_alt, fg = red })
                 else
                     -- Light theme (pencil-light colors)
                     vim.api.nvim_set_hl(0, 'StatusLine', { bg = '#eeeeee', fg = '#424242' })
@@ -375,11 +421,12 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'StatusLineTerm', { bg = '#eeeeee', fg = '#424242' })
                     vim.api.nvim_set_hl(0, 'StatusLineTermNC', { bg = '#eeeeee', fg = '#888888' })
                     vim.api.nvim_set_hl(0, 'Terminal', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { bg = '#eeeeee', fg = '#888888' })
                 end
             end
             local function apply_markdown_highlights()
                 if vim.o.background == 'dark' then
-                    local bg = '#191919'
+                    local bg = '#0F1B1D'
                     vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = bg })
                     vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = bg })
                     for i = 1, 6 do
@@ -413,6 +460,23 @@ require('lazy').setup({
         },
         config = function()
             require('lsp-file-operations').setup()
+        end,
+    },
+
+    -- Git signs (показывает изменения + blame)
+    {
+        'lewis6991/gitsigns.nvim',
+        config = function()
+            require('gitsigns').setup {
+                current_line_blame = true,
+                current_line_blame_opts = {
+                    delay = 300,
+                },
+            }
+            -- Set highlight after gitsigns loads
+            if vim.o.background == 'light' then
+                vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { fg = '#888888', default = false })
+            end
         end,
     },
 
@@ -450,7 +514,6 @@ require('lazy').setup({
             }
         end,
     },
-    { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
 
     -- Oil (file manager)
     {
@@ -510,7 +573,6 @@ require('lazy').setup({
             { '<leader>bc', '<cmd>BufferClose<cr>', desc = 'Close buffer' },
         },
     },
-
 
     -- Fetchfact for dashboard footer
     {
@@ -573,6 +635,31 @@ require('lazy').setup({
     {
         'Hoffs/omnisharp-extended-lsp.nvim',
         lazy = false,
+    },
+
+    -- Database UI (PostgreSQL, MySQL, SQLite, MSSQL, etc.)
+    {
+        'kndndrj/nvim-dbee',
+        dependencies = { 'MunifTanjim/nui.nvim' },
+        build = function()
+            require('dbee').install()
+        end,
+        config = function()
+            require('dbee').setup {
+                sources = {
+                    require('dbee.sources').FileSource:new(vim.fn.stdpath 'state' .. '/dbee/connections.json'),
+                },
+            }
+        end,
+        keys = {
+            {
+                '<leader>db',
+                function()
+                    require('dbee').toggle()
+                end,
+                desc = 'Toggle Dbee',
+            },
+        },
     },
 
     -- Mason (для установки LSP серверов)
@@ -687,6 +774,24 @@ require('lazy').setup({
         priority = 1000,
         opts = {
             image = { enabled = true },
+        },
+    },
+
+    -- Fast Fuzzy File finder
+    {
+        'dmtrKovalenko/fff.nvim',
+        build = function()
+            require('fff.download').download_or_build_binary()
+        end,
+        lazy = false,
+        keys = {
+            {
+                'ff',
+                function()
+                    require('fff').find_files()
+                end,
+                desc = 'Find files (fff)',
+            },
         },
     },
 
