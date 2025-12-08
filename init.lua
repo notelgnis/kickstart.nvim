@@ -60,14 +60,10 @@ local function apply_cterm_highlights()
         vim.cmd [[hi CursorLineNr ctermfg=208 ctermbg=NONE]]
         vim.cmd [[hi DashboardHeader ctermfg=223 guifg=#5a6570]]
         vim.cmd [[hi DashboardFooter ctermfg=12 guifg=#5C6773]]
-        -- Red cursor in insert mode for dark theme
-        vim.cmd [[hi iCursor guifg=#ffffff guibg=#FF0000]]
     else
         vim.cmd [[hi CursorLineNr ctermfg=27  ctermbg=NONE]]
         vim.cmd [[hi DashboardHeader ctermfg=0 guifg=#5c6773]]
         vim.cmd [[hi DashboardFooter ctermfg=4 guifg=#5C6773]]
-        -- Red cursor in insert mode for light theme
-        vim.cmd [[hi iCursor guifg=#ffffff guibg=#FF0000]]
     end
 end
 
@@ -78,21 +74,19 @@ vim.keymap.set('n', '<leader>l', function()
     else
         vim.o.background = 'dark'
         vim.cmd 'colorscheme telemetry'
-        -- Override background
-        local bg = '#0F1B1D'
+        -- Transparent background
         local fg = '#9abfbe'
-        local code_bg = '#191919'
-        vim.api.nvim_set_hl(0, 'Normal', { bg = bg, fg = fg })
-        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
-        vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
-        vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
-        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = bg })
-        vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = bg })
-        vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = bg })
-        vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = bg, fg = bg })
-        -- Markdown code blocks background
-        vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = code_bg })
-        vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = code_bg })
+        vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+        vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = '#0F1B1D' })
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
         -- Remove header background highlights
         for i = 1, 6 do
             vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
@@ -221,20 +215,18 @@ require('lazy').setup({
             -- Apply theme based on system preference
             if vim.g.system_theme_is_dark then
                 vim.cmd 'colorscheme telemetry'
-                -- Override background after theme loads
-                local bg = '#0F1B1D'
+                -- Transparent background
                 local fg = '#9abfbe'
-                local code_bg = '#191919'
-                vim.api.nvim_set_hl(0, 'Normal', { bg = bg, fg = fg })
-                vim.api.nvim_set_hl(0, 'NormalFloat', { bg = bg })
-                vim.api.nvim_set_hl(0, 'SignColumn', { bg = bg })
-                vim.api.nvim_set_hl(0, 'LineNr', { bg = bg })
-                vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = bg })
-                vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = bg })
-                vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = bg, fg = bg })
-                -- Markdown code blocks background
-                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = code_bg })
-                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = code_bg })
+                vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+                vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+                vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = '#0F1B1D' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
                 -- Remove header background highlights
                 for i = 1, 6 do
                     vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
@@ -356,7 +348,7 @@ require('lazy').setup({
                 vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
                 if is_dark then
                     -- Telemetry theme colors
-                    local bg = '#0F1B1D'
+                    local bg_dark = '#0F1B1D'
                     local bg_alt = '#162224'
                     local fg = '#e0f0ef'
                     local grey = '#6b8d94'
@@ -367,13 +359,13 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = bg_alt })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = bg_alt, fg = yellow })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
-                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = bg, fg = grey })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = bg, fg = green })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = bg, fg = '#ed9366' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = bg, fg = green })
-                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = bg, fg = bg })
-                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = bg, fg = bg })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = yellow, fg = bg, bold = true })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = 'NONE', fg = '#ed9366' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = yellow, fg = bg_dark, bold = true })
                     vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = bg_alt })
                     vim.api.nvim_set_hl(0, 'BufferInactive', { bg = bg_alt, fg = grey })
                     vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = bg_alt, fg = grey })
@@ -426,9 +418,8 @@ require('lazy').setup({
             end
             local function apply_markdown_highlights()
                 if vim.o.background == 'dark' then
-                    local bg = '#0F1B1D'
-                    vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = bg })
-                    vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = bg })
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
                     for i = 1, 6 do
                         vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
                     end
