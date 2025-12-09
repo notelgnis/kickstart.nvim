@@ -1053,7 +1053,7 @@ require('lazy').setup({
         end,
     },
 
-    -- Mini.nvim (только statusline)
+    -- Mini.nvim (statusline + indentscope)
     {
         'echasnovski/mini.nvim',
         config = function()
@@ -1062,6 +1062,12 @@ require('lazy').setup({
             statusline.section_location = function()
                 return '%2l:%-2v'
             end
+
+            require('mini.comment').setup()
+            require('mini.surround').setup()
+            require('mini.pairs').setup()
+            require('mini.jump').setup()
+            require('mini.splitjoin').setup()
         end,
     },
 }, {
