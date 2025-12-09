@@ -656,7 +656,27 @@ require('lazy').setup({
             {
                 '<leader>db',
                 function()
-                    require('dbee').toggle()
+                    local dbee = require('dbee')
+                    if dbee.is_open() then
+                        dbee.close()
+                        if vim.g.neotree_was_open then
+                            vim.cmd('Neotree show')
+                            vim.g.neotree_was_open = false
+                        end
+                    else
+                        -- Проверяем открыт ли neo-tree
+                        vim.g.neotree_was_open = false
+                        for _, win in ipairs(vim.api.nvim_list_wins()) do
+                            local buf = vim.api.nvim_win_get_buf(win)
+                            local ft = vim.bo[buf].filetype
+                            if ft == 'neo-tree' then
+                                vim.g.neotree_was_open = true
+                                break
+                            end
+                        end
+                        pcall(function() vim.cmd('Neotree close') end)
+                        dbee.open()
+                    end
                 end,
                 desc = 'Toggle Dbee',
             },
