@@ -640,6 +640,16 @@ require('lazy').setup({
                 sources = {
                     require('dbee.sources').FileSource:new(vim.fn.stdpath 'state' .. '/dbee/connections.json'),
                 },
+                window_layout = require('dbee.layouts').Default:new({
+                    drawer_width = 50,
+                    result_height = 15,
+                }),
+                editor = {
+                    mappings = {
+                        { key = '<F5>', mode = 'v', action = 'run_selection' },
+                        { key = '<F5>', mode = 'n', action = 'run_file' },
+                    },
+                },
             }
         end,
         keys = {
@@ -858,16 +868,20 @@ require('lazy').setup({
         },
         opts = {
             notify_on_error = false,
-            format_on_save = {
-                timeout_ms = 500,
-                lsp_fallback = true,
-            },
+            format_on_save = function(bufnr)
+                local ft = vim.bo[bufnr].filetype
+                if ft == 'sql' or ft == 'mysql' or ft == 'plsql' then
+                    return false
+                end
+                return { timeout_ms = 500, lsp_fallback = true }
+            end,
             formatters_by_ft = {
                 lua = { 'stylua' },
                 javascript = { 'prettier' },
                 typescript = { 'prettier' },
                 json = { 'prettier' },
                 markdown = { 'prettier' },
+                sql = {},  -- отключить форматирование для SQL
             },
         },
     },
