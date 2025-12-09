@@ -191,6 +191,12 @@ Examples:
                       }
 ```
 
+## Diagnostics (LSP errors)
+
+- `<leader>xx` - list all diagnostics (Telescope)
+- `<leader>xd` - show diagnostic under cursor
+- `[d` / `]d` - prev/next diagnostic
+
 ## Misc
 
 - `J` - join lines
