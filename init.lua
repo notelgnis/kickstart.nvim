@@ -327,6 +327,9 @@ require('lazy').setup({
                     },
                 },
                 default_component_configs = {
+                    name = {
+                        use_git_status_colors = true,
+                    },
                     git_status = {
                         symbols = {
                             added = 'ﱈ',
@@ -342,8 +345,8 @@ require('lazy').setup({
                     },
                 },
             }
-            -- Custom highlights for dark theme
-            local function apply_custom_highlights()
+            -- Custom highlights for dark theme (global for dark-notify)
+            function _G.apply_custom_highlights()
                 local is_dark = vim.o.background == 'dark'
                 local folder_icon = is_dark and '#c27166' or '#af0000'
                 vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
@@ -358,6 +361,16 @@ require('lazy').setup({
                     local yellow = '#F4AE59'
                     local red = '#c27166'
                     local cyan = '#93bfc2'
+                    -- Transparent background
+                    vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = bg_dark })
+                    vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE', fg = bg_dark })
+                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = bg_alt })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = bg_alt, fg = yellow })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
@@ -381,14 +394,29 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = bg_alt, fg = yellow })
                     vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = bg_alt })
                     vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = bg_alt, fg = red })
+                    -- Neo-tree git highlights (no italic)
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUnstaged', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitAdded', { fg = yellow, italic = false })
                 else
                     -- Light theme (pencil-light colors)
-                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = '#eeeeee', fg = '#424242' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = '#eeeeee', fg = '#10a778' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = '#eeeeee', fg = '#424242' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = '#eeeeee', fg = '#10a778' })
-                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = '#eeeeee', fg = '#eeeeee' })
-                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = '#eeeeee', fg = '#eeeeee' })
+                    vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = 'NONE', fg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#10a778', fg = '#eeeeee', bold = true })
                     vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = '#e0e0e0' })
                     vim.api.nvim_set_hl(0, 'BufferInactive', { bg = '#e0e0e0', fg = '#888888' })
@@ -403,28 +431,37 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = '#e0e0e0', fg = '#10a778' })
                     vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = '#e0e0e0' })
                     vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = '#e0e0e0', fg = '#d75f5f' })
-                    vim.api.nvim_set_hl(0, 'SidekickChat', { bg = '#eeeeee', fg = '#424242' })
-                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#eeeeee', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'SidekickChat', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE', fg = '#424242' })
                     vim.api.nvim_set_hl(0, 'BufferVisible', { bg = '#e0e0e0', fg = '#666666' })
                     vim.api.nvim_set_hl(0, 'BufferVisibleIndex', { bg = '#e0e0e0', fg = '#666666' })
                     vim.api.nvim_set_hl(0, 'BufferVisibleMod', { bg = '#e0e0e0', fg = '#666666' })
                     vim.api.nvim_set_hl(0, 'BufferVisibleSign', { bg = '#e0e0e0', fg = '#666666' })
                     vim.api.nvim_set_hl(0, 'BufferVisibleIcon', { bg = '#e0e0e0' })
                     vim.api.nvim_set_hl(0, 'BufferVisibleTarget', { bg = '#e0e0e0', fg = '#d75f5f' })
-                    vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { bg = '#eeeeee', fg = '#888888' })
-                    vim.api.nvim_set_hl(0, 'StatusLineTerm', { bg = '#eeeeee', fg = '#424242' })
-                    vim.api.nvim_set_hl(0, 'StatusLineTermNC', { bg = '#eeeeee', fg = '#888888' })
-                    vim.api.nvim_set_hl(0, 'Terminal', { bg = '#eeeeee', fg = '#424242' })
-                    vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { bg = '#eeeeee', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTerm', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTermNC', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'Terminal', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'WinBar', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'WinBarNC', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'SnacksPickerMatch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
+                    vim.api.nvim_set_hl(0, 'IncSearch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
+                    vim.api.nvim_set_hl(0, 'Search', { bg = '#F3BF5D', fg = '#101B1D' })
+                    -- Neo-tree git highlights (no italic, same color for all)
+                    local git_color = '#d75f00'
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUnstaged', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitAdded', { fg = git_color, italic = false })
                 end
             end
-            local function apply_markdown_highlights()
-                if vim.o.background == 'dark' then
-                    vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
-                    for i = 1, 6 do
-                        vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
-                    end
+            function _G.apply_markdown_highlights()
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
+                for i = 1, 6 do
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
                 end
             end
             apply_custom_highlights()
@@ -484,7 +521,8 @@ require('lazy').setup({
             },
         },
         keys = {
-            { '<leader>do', '<cmd>DiffviewOpen<cr>', desc = 'Diff open' },
+            { '<leader>do', '<cmd>DiffviewOpen<cr>', desc = 'Diff open (all)' },
+            { '<leader>df', '<cmd>Gitsigns diffthis<cr>', desc = 'Diff file (current)' },
             { '<leader>dh', '<cmd>DiffviewFileHistory %<cr>', desc = 'Diff file history' },
             { '<leader>dc', '<cmd>DiffviewClose<cr>', desc = 'Diff close' },
         },
@@ -904,6 +942,14 @@ require('lazy').setup({
                 json = { 'prettier' },
                 markdown = { 'prettier' },
                 sql = {},  -- отключить форматирование для SQL
+                cs = { 'dotnet_format' },
+            },
+            formatters = {
+                dotnet_format = {
+                    command = 'dotnet',
+                    args = { 'format', '--include', '$FILENAME' },
+                    stdin = false,
+                },
             },
         },
     },
@@ -1015,6 +1061,7 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'RainbowGreen', { fg = '#3d5c3a' })
                     vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#4d3a5c' })
                     vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#3a5c5c' })
+                    vim.api.nvim_set_hl(0, 'IblScope', { fg = '#6b8d94' })
                 else
                     -- Bright colors for light theme
                     vim.api.nvim_set_hl(0, 'RainbowRed', { fg = '#E06C75' })
@@ -1024,6 +1071,7 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'RainbowGreen', { fg = '#98C379' })
                     vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#C678DD' })
                     vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#56B6C2' })
+                    vim.api.nvim_set_hl(0, 'IblScope', { fg = '#888888' })
                 end
             end)
 
@@ -1034,6 +1082,25 @@ require('lazy').setup({
                     highlight = highlight,
                 },
             }
+        end,
+    },
+
+    -- Dark/Light theme sync with system
+    {
+        'cormacrelf/dark-notify',
+        config = function()
+            require('dark_notify').run({
+                schemes = {
+                    dark = { colorscheme = 'telemetry', background = 'dark' },
+                    light = { colorscheme = 'papercolor-custom', background = 'light' },
+                },
+                onchange = function(mode)
+                    vim.schedule(function()
+                        _G.apply_custom_highlights()
+                        _G.apply_markdown_highlights()
+                    end)
+                end,
+            })
         end,
     },
 
