@@ -399,6 +399,34 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'NeoTreeGitUnstaged', { fg = yellow, italic = false })
                     vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = yellow, italic = false })
                     vim.api.nvim_set_hl(0, 'NeoTreeGitAdded', { fg = yellow, italic = false })
+                    -- Neogit highlights
+                    vim.api.nvim_set_hl(0, 'NeogitNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupSwitchKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupOptionKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupActionKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitSectionHeader', { fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeModified', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeAdded', { fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeDeleted', { fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffHeader', { bg = 'NONE', fg = yellow, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffHeaderHighlight', { bg = 'NONE', fg = yellow, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkHeader', { bg = 'NONE', fg = cyan })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkHeaderHighlight', { bg = 'NONE', fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffContext', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffContextHighlight', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffAdd', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffAddHighlight', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffDelete', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffDeleteHighlight', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitCursorLine', { bg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'NeogitWinSeparator', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'NeogitCommitViewHeader', { bg = 'NONE' })
+                    -- Diffview highlights
+                    vim.api.nvim_set_hl(0, 'DiffviewNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffAdd', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffDelete', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffChange', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffText', { bg = bg_alt })
                 else
                     -- Light theme (pencil-light colors)
                     vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
@@ -525,6 +553,51 @@ require('lazy').setup({
             { '<leader>df', '<cmd>Gitsigns diffthis<cr>', desc = 'Diff file (current)' },
             { '<leader>dh', '<cmd>DiffviewFileHistory %<cr>', desc = 'Diff file history' },
             { '<leader>dc', '<cmd>DiffviewClose<cr>', desc = 'Diff close' },
+        },
+    },
+
+    -- Neogit (magit-like git interface)
+    {
+        'NeogitOrg/neogit',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'sindrets/diffview.nvim',
+        },
+        config = function()
+            local bg = vim.o.background == 'dark' and 'NONE' or 'NONE'
+            require('neogit').setup {
+                integrations = {
+                    diffview = true,
+                },
+                highlight = {
+                    context = bg,
+                    context_highlight = bg,
+                },
+            }
+            -- Force theme-matched background for neogit windows
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'NeogitStatus', 'NeogitCommitView', 'NeogitLogView', 'NeogitPopup', 'NeogitCommitMessage' },
+                callback = function()
+                    if vim.o.background == 'dark' then
+                        local bg_context = '#162224'  -- slightly lighter than bg
+                        local bg_add = '#1a2e1a'      -- dark green tint
+                        local bg_delete = '#2e1a1a'   -- dark red tint
+                        vim.api.nvim_set_hl(0, 'NeogitNormal', { bg = 'NONE' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffContext', { bg = bg_context })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffContextHighlight', { bg = bg_context })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffAdd', { bg = bg_add, fg = '#8dac8b' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffAddHighlight', { bg = bg_add, fg = '#8dac8b' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffDelete', { bg = bg_delete, fg = '#c27166' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffDeleteHighlight', { bg = bg_delete, fg = '#c27166' })
+                    end
+                end,
+            })
+        end,
+        keys = {
+            { '<leader>gg', '<cmd>Neogit<cr>', desc = 'Neogit' },
+            { '<leader>gc', '<cmd>Neogit commit<cr>', desc = 'Neogit commit' },
+            { '<leader>gp', '<cmd>Neogit push<cr>', desc = 'Neogit push' },
+            { '<leader>gl', '<cmd>Neogit pull<cr>', desc = 'Neogit pull' },
         },
     },
 
