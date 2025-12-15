@@ -29,6 +29,9 @@ Leader key: `Space`
 - `ff` - Find files
 
 ### Barbar (tabs/buffers)
+- `Tab` - Next buffer
+- `Shift+Tab` - Previous buffer
+- `<leader>1-5` - Go to buffer 1-5
 - `<leader>bo` - Close other buffers
 - `<leader>bc` - Close current buffer
 

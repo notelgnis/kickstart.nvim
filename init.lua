@@ -673,6 +673,13 @@ require('lazy').setup({
             },
         },
         keys = {
+            { '<S-Tab>', '<cmd>BufferPrevious<cr>', desc = 'Previous buffer' },
+            { '<Tab>', '<cmd>BufferNext<cr>', desc = 'Next buffer' },
+            { '<leader>1', '<cmd>BufferGoto 1<cr>', desc = 'Buffer 1' },
+            { '<leader>2', '<cmd>BufferGoto 2<cr>', desc = 'Buffer 2' },
+            { '<leader>3', '<cmd>BufferGoto 3<cr>', desc = 'Buffer 3' },
+            { '<leader>4', '<cmd>BufferGoto 4<cr>', desc = 'Buffer 4' },
+            { '<leader>5', '<cmd>BufferGoto 5<cr>', desc = 'Buffer 5' },
             { '<leader>bo', '<cmd>BufferCloseAllButCurrent<cr>', desc = 'Close other buffers' },
             { '<leader>bc', '<cmd>BufferClose<cr>', desc = 'Close buffer' },
         },
