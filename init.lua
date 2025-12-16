@@ -364,13 +364,13 @@ require('lazy').setup({
                     -- Transparent background
                     vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
                     vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
-                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE', fg = fg })
                     vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE', fg = bg_dark })
-                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = bg_dark })
+                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = grey })
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = bg_alt })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = bg_alt, fg = yellow })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
@@ -427,6 +427,10 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'DiffviewDiffDelete', { bg = 'NONE', fg = red })
                     vim.api.nvim_set_hl(0, 'DiffviewDiffChange', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'DiffviewDiffText', { bg = bg_alt })
+                    -- Dbee highlights
+                    vim.api.nvim_set_hl(0, 'DbeeRowNumber', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'DbeeBorder', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'DbeeHeader', { fg = yellow, bold = true })
                 else
                     -- Light theme (pencil-light colors)
                     vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
