@@ -38,6 +38,7 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.cursorline = true
+vim.opt.cursorlineopt = 'line,number'
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.opt.hidden = true
@@ -46,6 +47,7 @@ vim.o.background = 'dark'
 vim.opt.tabstop = 4
 vim.opt.expandtab = true
 vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:block-iCursor-blinkon500-blinkoff500,r-cr:hor20,o:hor50'
+vim.opt.sessionoptions = 'blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions'
 
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -327,6 +329,10 @@ require('lazy').setup({
                     },
                 },
                 default_component_configs = {
+                    indent = {
+                        indent_marker = '┊',
+                        last_indent_marker = '└',
+                    },
                     name = {
                         use_git_status_colors = true,
                     },
@@ -375,10 +381,11 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText1', { fg = grey })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText2', { fg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'NeoTreeIndentMarker', { fg = '#4a8090' })
                     vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = grey })
                     local cursor_bg = '#1a3a42'
-                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = cursor_bg, underline = false })
                     vim.api.nvim_set_hl(0, 'Visual', { bg = '#6b8e94', fg = '#ffffff' })
                     vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = cursor_bg, fg = yellow })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
@@ -462,36 +469,39 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'DiffviewFilePanelCounter', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'DiffviewSignColumn', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'DiffviewEndOfBuffer', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'DiffviewCursorLine', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'DiffviewCursorLine', { bg = cursor_bg, underline = false })
                     vim.api.nvim_set_hl(0, 'DiffviewFilePanelSelected', { bg = cursor_bg })
                     vim.api.nvim_set_hl(0, 'DiffviewFocusedLine', { bg = cursor_bg })
                     vim.api.nvim_set_hl(0, 'DiffviewSecondary', { bg = cursor_bg })
                     vim.api.nvim_set_hl(0, 'DiffviewDiffAdd', { bg = 'NONE', fg = green })
                     vim.api.nvim_set_hl(0, 'DiffviewDiffDelete', { bg = 'NONE', fg = red })
-                    vim.api.nvim_set_hl(0, 'DiffviewDiffChange', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffChange', { bg = 'NONE', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffText', { bg = '#3a5070', fg = '#c0e8ff', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
                     -- Standard diff highlights (used by Diffview)
                     vim.api.nvim_set_hl(0, 'DiffAdd', { bg = 'NONE', fg = green })
                     vim.api.nvim_set_hl(0, 'DiffDelete', { bg = 'NONE', fg = red })
-                    vim.api.nvim_set_hl(0, 'DiffChange', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'DiffText', { bg = cursor_bg, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'DiffChange', { bg = 'NONE', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    vim.api.nvim_set_hl(0, 'DiffText', { bg = '#3a5070', fg = '#c0e8ff', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
                     vim.api.nvim_set_hl(0, 'Folded', { bg = '#3a2a2a', fg = '#c98dad' })
                     -- Telescope highlights
                     vim.api.nvim_set_hl(0, 'TelescopeNormal', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'TelescopeBorder', { bg = 'NONE', fg = '#0b1f26' })
+                    vim.api.nvim_set_hl(0, 'TelescopeBorder', { bg = 'NONE', fg = '#062738' })
                     vim.api.nvim_set_hl(0, 'TelescopePromptNormal', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { bg = 'NONE', fg = '#0b1f26' })
+                    vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { bg = 'NONE', fg = '#062738' })
                     vim.api.nvim_set_hl(0, 'TelescopeResultsNormal', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { bg = 'NONE', fg = '#0b1f26' })
+                    vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { bg = 'NONE', fg = '#062738' })
                     vim.api.nvim_set_hl(0, 'TelescopePreviewNormal', { bg = 'NONE' })
-                    vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { bg = 'NONE', fg = '#0b1f26' })
+                    vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { bg = 'NONE', fg = '#062738' })
                     vim.api.nvim_set_hl(0, 'TelescopeSelection', { bg = cursor_bg })
                     -- Dbee highlights
                     vim.api.nvim_set_hl(0, 'DbeeRowNumber', { fg = grey })
                     vim.api.nvim_set_hl(0, 'DbeeBorder', { fg = grey })
                     vim.api.nvim_set_hl(0, 'DbeeHeader', { fg = yellow, bold = true })
                     -- FFF
-                    vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#0b1f26', bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#062738', bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'FFFActiveFile', { bg = cursor_bg })
+                    -- Float border (invisible - same as background)
+                    vim.api.nvim_set_hl(0, 'FloatBorder', { fg = bg_dark, bg = 'NONE' })
                     -- Pmenu (autocomplete popup)
                     vim.api.nvim_set_hl(0, 'Pmenu', { bg = 'NONE', fg = fg })
                     vim.api.nvim_set_hl(0, 'PmenuSel', { bg = cursor_bg, bold = true })
@@ -500,6 +510,7 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'WildMenu', { bg = yellow, fg = bg_dark, bold = true })
                 else
                     -- Light theme (pencil-light colors)
+                    vim.opt.fillchars = { vert = ' ', eob = ' ' }
                     vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
@@ -633,6 +644,9 @@ require('lazy').setup({
                         layout = 'diff3_mixed',
                     },
                 },
+                keymaps_help = {
+                    border = 'none',
+                },
             }
             -- Force transparent backgrounds in diffview
             vim.api.nvim_create_autocmd('FileType', {
@@ -722,6 +736,9 @@ require('lazy').setup({
         opts = {
             default_file_explorer = true,
             columns = { 'icon' },
+            keymaps_help = {
+                border = 'none',
+            },
             keymaps = {
                 ['g?'] = 'actions.show_help',
                 ['<CR>'] = 'actions.select',
@@ -974,7 +991,13 @@ require('lazy').setup({
         'MeanderingProgrammer/render-markdown.nvim',
         dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
         ft = { 'markdown' },
-        opts = {},
+        opts = {
+            code = {
+                border = 'none',
+                above = '',
+                below = '',
+            },
+        },
     },
 
     -- HTTP client (REST API requests from .http files)
@@ -1034,6 +1057,11 @@ require('lazy').setup({
         priority = 1000,
         opts = {
             image = { enabled = true },
+            styles = {
+                snacks_image = {
+                    border = 'none',
+                },
+            },
         },
     },
 
@@ -1045,12 +1073,16 @@ require('lazy').setup({
         end,
         lazy = false,
         config = function()
-            vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#0b1f26', bg = 'NONE' })
+            vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#062738', bg = 'NONE' })
             vim.api.nvim_set_hl(0, 'FFFActiveFile', { bg = '#1a3a42', fg = 'NONE' })
             require('fff').setup {
+                prompt = '> ',
                 hl = {
                     border = 'FFFBorder',
                     active_file = 'FFFActiveFile',
+                },
+                layout = {
+                    preview_size = 0.5,
                 },
             }
         end,
@@ -1088,14 +1120,19 @@ require('lazy').setup({
         config = function()
             require('telescope').setup {
                 defaults = {
-                    borderchars = { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+                    border = false,
+                    layout_config = {
+                        horizontal = {
+                            preview_width = 0.5,
+                        },
+                    },
                 },
             }
-            -- Set telescope border color to blend with bg
-            vim.api.nvim_set_hl(0, 'TelescopeBorder', { fg = '#0b1f26' })
-            vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { fg = '#0b1f26' })
-            vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { fg = '#0b1f26' })
-            vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { fg = '#0b1f26' })
+            -- Set telescope border color
+            vim.api.nvim_set_hl(0, 'TelescopeBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { fg = '#062738' })
             pcall(require('telescope').load_extension, 'fzf')
 
             local builtin = require 'telescope.builtin'
@@ -1113,7 +1150,11 @@ require('lazy').setup({
         'folke/which-key.nvim',
         event = 'VimEnter',
         config = function()
-            require('which-key').setup()
+            require('which-key').setup {
+                win = {
+                    border = 'none',
+                },
+            }
             require('which-key').add {
                 { '<leader>s', group = '[S]earch' },
                 { '<leader>c', group = '[C]ode' },
