@@ -1,0 +1,1171 @@
+-- Server Neovim config: lightweight, no IDE-heavy plugins
+-- Usage: cp init-server.lua init.lua
+
+-- Leader key
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+
+-- Nerd Font
+vim.g.have_nerd_font = true
+
+-- Server: always dark (no system theme detection)
+vim.g.system_theme_is_dark = true
+
+-- [[ Options ]]
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.mouse = 'a'
+vim.opt.showmode = false
+vim.opt.clipboard = 'unnamedplus'
+vim.opt.breakindent = true
+vim.opt.undofile = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.signcolumn = 'yes'
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 300
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.cursorline = true
+vim.opt.cursorlineopt = 'number'  -- only highlight line number, not the whole line
+vim.opt.scrolloff = 10
+vim.opt.hlsearch = true
+vim.opt.hidden = true
+vim.opt.termguicolors = true
+vim.o.background = 'dark'
+vim.opt.tabstop = 4
+vim.opt.expandtab = true
+vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:block-iCursor-blinkon500-blinkoff500,r-cr:hor20,o:hor50'
+vim.opt.sessionoptions = 'blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions'
+
+-- Copy on mouse select release (like terminal)
+vim.keymap.set('v', '<LeftRelease>', '"+y<LeftRelease>', { desc = 'Copy on mouse release' })
+
+-- [[ Keymaps ]]
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('t', '<C-q>', [[<C-\><C-n>]], { desc = 'Exit terminal mode' })
+vim.keymap.set('n', '<leader>xx', '<cmd>Telescope diagnostics<CR>', { desc = 'Diagnostics list' })
+vim.keymap.set('n', '<leader>xd', vim.diagnostic.open_float, { desc = 'Diagnostic under cursor' })
+
+-- Clean up unnamed/empty buffers (leftover from diff views)
+vim.keymap.set('n', '<leader>bx', function()
+    local deleted = 0
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        local name = vim.api.nvim_buf_get_name(buf)
+        local listed = vim.bo[buf].buflisted
+        if listed and name == '' and vim.api.nvim_buf_is_loaded(buf) then
+            local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+            local is_empty = #lines == 0 or (#lines == 1 and lines[1] == '')
+            if is_empty then
+                vim.api.nvim_buf_delete(buf, { force = true })
+                deleted = deleted + 1
+            end
+        end
+    end
+    vim.notify('Cleaned ' .. deleted .. ' empty buffer(s)', vim.log.levels.INFO)
+end, { desc = 'Clean empty buffers' })
+
+-- Toggle dark/light
+local function apply_cterm_highlights()
+    if vim.o.background == 'dark' then
+        vim.cmd [[hi CursorLineNr ctermfg=208 ctermbg=NONE]]
+        vim.cmd [[hi DashboardHeader ctermfg=223 guifg=#5a6570]]
+        vim.cmd [[hi DashboardFooter ctermfg=12 guifg=#5C6773]]
+    else
+        vim.cmd [[hi CursorLineNr ctermfg=27  ctermbg=NONE]]
+        vim.cmd [[hi DashboardHeader ctermfg=0 guifg=#5c6773]]
+        vim.cmd [[hi DashboardFooter ctermfg=4 guifg=#5C6773]]
+    end
+end
+
+vim.keymap.set('n', '<leader>l', function()
+    if vim.o.background == 'dark' then
+        vim.o.background = 'light'
+        vim.cmd 'colorscheme PaperColor'
+    else
+        vim.o.background = 'dark'
+        vim.cmd 'colorscheme telemetry'
+        -- Transparent background
+        local fg = '#9abfbe'
+        vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+        vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+        vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = '#0F1B1D' })
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+        vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
+        -- Remove header background highlights
+        for i = 1, 6 do
+            vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+        end
+    end
+    apply_cterm_highlights()
+    vim.cmd 'doautocmd ColorScheme'
+end, { desc = 'Toggle Dark/Light' })
+
+-- Highlight on yank
+vim.api.nvim_create_autocmd('TextYankPost', {
+    desc = 'Highlight when yanking text',
+    group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
+    callback = function()
+        vim.highlight.on_yank()
+    end,
+})
+
+-- Close dashboard when opening a file
+vim.api.nvim_create_autocmd('BufReadPre', {
+    callback = function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.bo[buf].filetype == 'dashboard' then
+                vim.api.nvim_buf_delete(buf, { force = true })
+            end
+        end
+    end,
+})
+
+-- VimEnter setup
+vim.api.nvim_create_autocmd('VimEnter', {
+    callback = function()
+        vim.defer_fn(function()
+            apply_cterm_highlights()
+            vim.opt.fillchars = { vert = ' ', eob = ' ' }
+            if vim.g.system_theme_is_dark then
+                vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE', fg = 'NONE' })
+            end
+        end, 50)
+    end,
+})
+
+-- Добавляем Mason bin в PATH
+vim.env.PATH = vim.fn.stdpath 'data' .. '/mason/bin:' .. vim.env.PATH
+
+-- [[ LSP Configuration (vim.lsp.config API for Neovim 0.11+) ]]
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(event)
+        local map = function(keys, func, desc)
+            vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+        end
+        map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+        map('gr', vim.lsp.buf.references, '[G]oto [R]eferences')
+        map('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
+        map('K', vim.lsp.buf.hover, 'Hover Documentation')
+        map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+        map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+    end,
+})
+
+-- LSP servers config
+vim.lsp.config('lua_ls', {
+    cmd = { 'lua-language-server' },
+    filetypes = { 'lua' },
+    settings = {
+        Lua = {
+            diagnostics = { globals = { 'vim' } },
+            workspace = { checkThirdParty = false },
+        },
+    },
+})
+
+-- Enable LSP servers (server: only lua_ls)
+vim.lsp.enable { 'lua_ls' }
+
+-- [[ Lazy.nvim plugin manager ]]
+local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+if not vim.loop.fs_stat(lazypath) then
+    local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
+    vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- [[ Plugins ]]
+require('lazy').setup({
+    -- Gruvbox тема (dark)
+    {
+        'morhetz/gruvbox',
+        priority = 1000,
+        config = function()
+            vim.g.gruvbox_contrast_dark = 'hard'
+            vim.g.gruvbox_italic = 1
+
+            -- Apply theme based on system preference
+            if vim.g.system_theme_is_dark then
+                vim.cmd 'colorscheme telemetry'
+                -- Transparent background
+                local fg = '#9abfbe'
+                vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+                vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+                vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = '#0F1B1D' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
+                -- Remove header background highlights
+                for i = 1, 6 do
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+                end
+            else
+                vim.o.background = 'light'
+                vim.cmd 'colorscheme PaperColor'
+            end
+        end,
+    },
+
+    -- Альтернативные темы
+    { 'Shatur/neovim-ayu', lazy = true },
+    { 'shaunsingh/nord.nvim', lazy = true },
+    { 'sainnhe/everforest', lazy = true },
+    { 'joshdick/onedark.vim', lazy = true },
+    { 'catppuccin/nvim', name = 'catppuccin', lazy = true },
+    { 'rebelot/kanagawa.nvim', lazy = true },
+    { 'rose-pine/neovim', name = 'rose-pine', lazy = true },
+
+    -- PaperColor тема (light)
+    {
+        'NLKNguyen/papercolor-theme',
+        priority = 1000,
+        init = function()
+            vim.g.PaperColor_Theme_Options = {
+                theme = {
+                    ['default.light'] = {
+                        override = {
+                            color10 = { '#cc0058', '233' },
+                            color14 = { '#004d99', '233' },
+                            color07 = { '#3d425c', '233' },
+                        },
+                    },
+                },
+            }
+        end,
+    },
+
+    -- Icons (must load first)
+    {
+        'nvim-tree/nvim-web-devicons',
+        enabled = vim.g.have_nerd_font,
+        lazy = false,
+        priority = 999,
+        config = function()
+            require('nvim-web-devicons').setup {
+                default = true,
+                override_by_extension = {
+                    ['md'] = {
+                        icon = '',
+                        color = '#d49a4f',
+                        cterm_color = '179',
+                        name = 'Md',
+                    },
+                    ['sql'] = {
+                        icon = '',
+                        color = '#d49a4f',
+                        cterm_color = '179',
+                        name = 'Sql',
+                    },
+                },
+                override_by_filename = {
+                    ['README.md'] = {
+                        icon = '',
+                        color = '#8dac8b',
+                        cterm_color = '108',
+                        name = 'Readme',
+                    },
+                },
+            }
+        end,
+    },
+
+    -- Neo-tree (file explorer)
+    {
+        'nvim-neo-tree/neo-tree.nvim',
+        branch = 'v3.x',
+        lazy = false,
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'MunifTanjim/nui.nvim',
+            'nvim-tree/nvim-web-devicons',
+        },
+        config = function()
+            require('neo-tree').setup {
+                source_selector = {
+                    statusline = false,
+                },
+                filesystem = {
+                    follow_current_file = { enabled = true },
+                    filtered_items = {
+                        visible = true,
+                        hide_dotfiles = false,
+                        hide_gitignored = false,
+                    },
+                },
+                default_component_configs = {
+                    indent = {
+                        indent_marker = '┊',
+                        last_indent_marker = '└',
+                    },
+                    name = {
+                        use_git_status_colors = true,
+                    },
+                    git_status = {
+                        symbols = {
+                            added = 'ﱈ',
+                            deleted = '',
+                            modified = '',
+                            renamed = '󰑕',
+                            untracked = '+',
+                            ignored = '',
+                            unstaged = '',
+                            staged = '',
+                            conflict = '',
+                        },
+                    },
+                },
+            }
+            -- Custom highlights for dark theme (global for dark-notify)
+            function _G.apply_custom_highlights()
+                local is_dark = vim.o.background == 'dark'
+                local folder_icon = is_dark and '#c27166' or '#af0000'
+                vim.api.nvim_set_hl(0, 'NeoTreeDirectoryIcon', { fg = folder_icon })
+                vim.api.nvim_set_hl(0, 'DiffviewFolderSign', { fg = folder_icon })
+                if is_dark then
+                    -- Telemetry theme colors
+                    local bg_dark = '#0F1B1D'
+                    local bg_alt = '#162224'
+                    local fg = '#e0f0ef'
+                    local grey = '#6b8d94'
+                    local green = '#8dac8b'
+                    local yellow = '#F4AE59'
+                    local red = '#c27166'
+                    local cyan = '#93bfc2'
+                    -- Transparent background
+                    vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'FoldColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'CursorColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'ColorColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE', fg = '#0b1f26' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeCursorLine', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = bg_dark })
+                    vim.api.nvim_set_hl(0, 'NeoTreeFadeText1', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'NeoTreeFadeText2', { fg = bg_alt })
+                    vim.api.nvim_set_hl(0, 'NeoTreeIndentMarker', { fg = '#4a8090' })
+                    vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE', fg = bg_dark })
+                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = grey })
+                    -- local cursor_bg = '#1a3a42'  -- teal
+                    local cursor_bg = '#454a52'  -- grey with slight blue tint
+                    vim.api.nvim_set_hl(0, 'CursorLine', { bg = cursor_bg, underline = false })
+                    vim.api.nvim_set_hl(0, 'Visual', { bg = '#6b8e94', fg = '#ffffff' })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = 'NONE', fg = '#ed9366' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'WinBar', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'WinBarNC', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = yellow, fg = bg_dark, bold = true })
+                    vim.api.nvim_set_hl(0, 'TabLine', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'TabLineFill', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TabLineSel', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = 'NONE', fg = yellow })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'BufferVisible', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIndex', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleMod', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleSign', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleTarget', { bg = 'NONE', fg = red })
+                    -- Clear all BufferDefault* backgrounds
+                    for name, _ in pairs(vim.api.nvim_get_hl(0, {})) do
+                        if name:match '^BufferDefault' then
+                            local hl = vim.api.nvim_get_hl(0, { name = name })
+                            hl.bg = nil
+                            vim.api.nvim_set_hl(0, name, hl)
+                        end
+                    end
+                    -- Neo-tree git highlights (no italic)
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUnstaged', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = yellow, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitAdded', { fg = yellow, italic = false })
+                    -- Neogit highlights
+                    vim.api.nvim_set_hl(0, 'NeogitNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupSwitchKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupOptionKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitPopupActionKey', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitSectionHeader', { fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeModified', { fg = yellow })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeAdded', { fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitChangeDeleted', { fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffHeader', { bg = 'NONE', fg = yellow, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffHeaderHighlight', { bg = 'NONE', fg = yellow, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkHeader', { bg = 'NONE', fg = cyan })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkHeaderHighlight', { bg = 'NONE', fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffContext', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffContextHighlight', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffAdd', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffAddHighlight', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffDelete', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffDeleteHighlight', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitCursorLine', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffContextCursor', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffAddCursor', { bg = cursor_bg, fg = green })
+                    vim.api.nvim_set_hl(0, 'NeogitDiffDeleteCursor', { bg = cursor_bg, fg = red })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkHeaderCursor', { bg = cursor_bg, fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitHunkMergeHeaderCursor', { bg = cursor_bg, fg = cyan, bold = true })
+                    vim.api.nvim_set_hl(0, 'NeogitWinSeparator', { bg = 'NONE', fg = grey })
+                    vim.api.nvim_set_hl(0, 'NeogitCommitViewHeader', { bg = 'NONE' })
+                    -- Diffview highlights
+                    vim.api.nvim_set_hl(0, 'DiffviewNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewStatusLine', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewStatusLineNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewFilePanelTitle', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewFilePanelCounter', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewSignColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewEndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'DiffviewCursorLine', { bg = cursor_bg, underline = false })
+                    vim.api.nvim_set_hl(0, 'DiffviewFilePanelSelected', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'DiffviewFocusedLine', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'DiffviewSecondary', { bg = cursor_bg })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffAdd', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffDelete', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffChange', { bg = 'NONE', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    vim.api.nvim_set_hl(0, 'DiffviewDiffText', { bg = '#3a5070', fg = '#c0e8ff', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    -- Standard diff highlights (used by Diffview)
+                    vim.api.nvim_set_hl(0, 'DiffAdd', { bg = 'NONE', fg = green })
+                    vim.api.nvim_set_hl(0, 'DiffDelete', { bg = 'NONE', fg = red })
+                    vim.api.nvim_set_hl(0, 'DiffChange', { bg = 'NONE', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    vim.api.nvim_set_hl(0, 'DiffText', { bg = '#3a5070', fg = '#c0e8ff', underline = false, undercurl = false, underdouble = false, underdotted = false, underdashed = false, strikethrough = false, nocombine = true })
+                    vim.api.nvim_set_hl(0, 'Folded', { bg = '#3a2a2a', fg = '#c98dad' })
+                    -- Telescope highlights
+                    vim.api.nvim_set_hl(0, 'TelescopeNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TelescopeBorder', { bg = 'NONE', fg = '#062738' })
+                    vim.api.nvim_set_hl(0, 'TelescopePromptNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { bg = 'NONE', fg = '#062738' })
+                    vim.api.nvim_set_hl(0, 'TelescopeResultsNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { bg = 'NONE', fg = '#062738' })
+                    vim.api.nvim_set_hl(0, 'TelescopePreviewNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { bg = 'NONE', fg = '#062738' })
+                    vim.api.nvim_set_hl(0, 'TelescopeSelection', { bg = cursor_bg })
+                    -- Dbee highlights
+                    vim.api.nvim_set_hl(0, 'DbeeRowNumber', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'DbeeBorder', { fg = grey })
+                    vim.api.nvim_set_hl(0, 'DbeeHeader', { fg = yellow, bold = true })
+                    -- FFF
+                    vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#062738', bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'FFFActiveFile', { bg = cursor_bg })
+                    -- Float border (invisible - same as background)
+                    vim.api.nvim_set_hl(0, 'FloatBorder', { fg = bg_dark, bg = 'NONE' })
+                    -- Pmenu (autocomplete popup)
+                    vim.api.nvim_set_hl(0, 'Pmenu', { bg = 'NONE', fg = fg })
+                    vim.api.nvim_set_hl(0, 'PmenuSel', { bg = cursor_bg, bold = true })
+                    vim.api.nvim_set_hl(0, 'PmenuSbar', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = grey })
+                    vim.api.nvim_set_hl(0, 'WildMenu', { bg = yellow, fg = bg_dark, bold = true })
+                else
+                    -- Light theme (pencil-light colors)
+                    vim.opt.fillchars = { vert = ' ', eob = ' ' }
+                    vim.api.nvim_set_hl(0, 'Normal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'SignColumn', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeCursorLine', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeFadeText1', { fg = '#aaaaaa' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeFadeText2', { fg = '#dddddd' })
+                    vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeStatusLine', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'StatusLineNC', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { bg = '#10a778', fg = '#eeeeee', bold = true })
+                    vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE', fg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TabLine', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'TabLineFill', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'TabLineSel', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferTabpageFill', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferInactive', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIndex', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveMod', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveSign', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferInactiveTarget', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrent', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIndex', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentMod', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentSign', { bg = 'NONE', fg = '#10a778' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferCurrentTarget', { bg = 'NONE', fg = '#d75f5f' })
+                    vim.api.nvim_set_hl(0, 'SidekickChat', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'BufferVisible', { bg = 'NONE', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIndex', { bg = 'NONE', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleMod', { bg = 'NONE', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleSign', { bg = 'NONE', fg = '#666666' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleIcon', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'BufferVisibleTarget', { bg = 'NONE', fg = '#d75f5f' })
+                    -- Clear all BufferDefault* backgrounds
+                    for name, _ in pairs(vim.api.nvim_get_hl(0, {})) do
+                        if name:match '^BufferDefault' then
+                            local hl = vim.api.nvim_get_hl(0, { name = name })
+                            hl.bg = nil
+                            vim.api.nvim_set_hl(0, name, hl)
+                        end
+                    end
+                    vim.api.nvim_set_hl(0, 'MiniStatuslineInactive', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTerm', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'StatusLineTermNC', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'Terminal', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'WinBar', { bg = 'NONE', fg = '#424242' })
+                    vim.api.nvim_set_hl(0, 'WinBarNC', { bg = 'NONE', fg = '#888888' })
+                    vim.api.nvim_set_hl(0, 'SnacksPickerMatch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
+                    vim.api.nvim_set_hl(0, 'IncSearch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
+                    vim.api.nvim_set_hl(0, 'Search', { bg = '#F3BF5D', fg = '#101B1D' })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = 'NONE', fg = '#005faf', bold = true })
+                    vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE', fg = '#aaaaaa' })
+                    -- Neo-tree git highlights (no italic, same color for all)
+                    local git_color = '#d75f00'
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUnstaged', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitUntracked', { fg = git_color, italic = false })
+                    vim.api.nvim_set_hl(0, 'NeoTreeGitAdded', { fg = git_color, italic = false })
+                end
+            end
+            function _G.apply_markdown_highlights()
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCode', { bg = 'NONE' })
+                vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', { bg = 'NONE' })
+                for i = 1, 6 do
+                    vim.api.nvim_set_hl(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NONE' })
+                end
+            end
+            apply_custom_highlights()
+            vim.api.nvim_create_autocmd('ColorScheme', { callback = apply_custom_highlights })
+            vim.api.nvim_create_autocmd('FileType', { pattern = 'markdown', callback = apply_markdown_highlights })
+            vim.api.nvim_create_autocmd({ 'BufEnter', 'WinEnter' }, {
+                callback = function()
+                    if vim.bo.filetype == 'neo-tree' then
+                        vim.wo.statusline = ' '
+                    end
+                end,
+            })
+        end,
+        keys = {
+            { '<leader>n', '<cmd>Neotree toggle<cr>', desc = 'Neo-tree toggle' },
+            { '<leader>e', '<cmd>Neotree reveal<cr>', desc = 'Neo-tree reveal file' },
+        },
+    },
+
+    -- Git signs (показывает изменения + blame)
+    {
+        'lewis6991/gitsigns.nvim',
+        config = function()
+            require('gitsigns').setup {
+                current_line_blame = true,
+                current_line_blame_opts = {
+                    delay = 2000,
+                },
+            }
+            -- Set highlight after gitsigns loads
+            if vim.o.background == 'light' then
+                vim.api.nvim_set_hl(0, 'GitSignsCurrentLineBlame', { fg = '#888888', default = false })
+            end
+        end,
+    },
+
+    -- Diffview (git diff viewer)
+    {
+        'sindrets/diffview.nvim',
+        config = function()
+            require('diffview').setup {
+                view = {
+                    merge_tool = {
+                        layout = 'diff3_mixed',
+                    },
+                },
+                keymaps_help = {
+                    border = 'none',
+                },
+            }
+            -- Force transparent backgrounds in diffview
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'DiffviewFiles', 'DiffviewFileHistory' },
+                callback = function()
+                    vim.wo.winhighlight = 'Normal:Normal,SignColumn:SignColumn,CursorLine:CursorLine,FoldColumn:Normal'
+                end,
+            })
+            vim.api.nvim_create_autocmd('BufEnter', {
+                pattern = 'diffview://*',
+                callback = function()
+                    vim.wo.winhighlight = 'Normal:Normal,SignColumn:SignColumn,CursorLine:CursorLine,FoldColumn:Normal'
+                end,
+            })
+        end,
+        keys = {
+            { '<leader>do', '<cmd>DiffviewOpen<cr>', desc = 'Diff open (all)' },
+            { '<leader>df', '<cmd>Gitsigns diffthis<cr>', desc = 'Diff file (current)' },
+            { '<leader>dh', '<cmd>DiffviewFileHistory %<cr>', desc = 'Diff file history' },
+            { '<leader>dc', '<cmd>DiffviewClose<cr>', desc = 'Diff close' },
+        },
+    },
+
+    -- Neogit (magit-like git interface)
+    {
+        'NeogitOrg/neogit',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'sindrets/diffview.nvim',
+        },
+        config = function()
+            local bg = vim.o.background == 'dark' and 'NONE' or 'NONE'
+            require('neogit').setup {
+                integrations = {
+                    diffview = true,
+                },
+                highlight = {
+                    context = bg,
+                    context_highlight = bg,
+                },
+            }
+            -- Force theme-matched background for neogit windows
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'NeogitStatus', 'NeogitCommitView', 'NeogitLogView', 'NeogitPopup', 'NeogitCommitMessage' },
+                callback = function()
+                    if vim.o.background == 'dark' then
+                        vim.api.nvim_set_hl(0, 'NeogitNormal', { bg = 'NONE' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffContext', { bg = 'NONE' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffContextHighlight', { bg = 'NONE' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffAdd', { bg = 'NONE', fg = '#8dac8b' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffAddHighlight', { bg = 'NONE', fg = '#8dac8b' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffDelete', { bg = 'NONE', fg = '#c27166' })
+                        vim.api.nvim_set_hl(0, 'NeogitDiffDeleteHighlight', { bg = 'NONE', fg = '#c27166' })
+                    end
+                end,
+            })
+        end,
+        keys = {
+            { '<leader>gg', '<cmd>Neogit<cr>', desc = 'Neogit' },
+            { '<leader>gc', '<cmd>Neogit commit<cr>', desc = 'Neogit commit' },
+            { '<leader>gp', '<cmd>Neogit push<cr>', desc = 'Neogit push' },
+            { '<leader>gl', '<cmd>Neogit pull<cr>', desc = 'Neogit pull' },
+        },
+    },
+
+    -- Window picker for neo-tree
+    {
+        's1n7ax/nvim-window-picker',
+        version = '2.*',
+        config = function()
+            require('window-picker').setup {
+                filter_rules = {
+                    include_current_win = false,
+                    autoselect_one = true,
+                    bo = {
+                        filetype = { 'neo-tree', 'neo-tree-popup', 'notify' },
+                        buftype = { 'terminal', 'quickfix' },
+                    },
+                },
+            }
+        end,
+    },
+
+    -- Oil (file manager)
+    {
+        'stevearc/oil.nvim',
+        opts = {
+            default_file_explorer = true,
+            columns = { 'icon' },
+            keymaps_help = {
+                border = 'none',
+            },
+            keymaps = {
+                ['g?'] = 'actions.show_help',
+                ['<CR>'] = 'actions.select',
+                ['<C-s>'] = 'actions.select_vsplit',
+                ['<C-h>'] = 'actions.select_split',
+                ['<C-t>'] = 'actions.select_tab',
+                ['<C-p>'] = 'actions.preview',
+                ['<C-c>'] = 'actions.close',
+                ['<C-l>'] = 'actions.refresh',
+                ['-'] = 'actions.parent',
+                ['_'] = 'actions.open_cwd',
+                ['`'] = 'actions.cd',
+                ['~'] = 'actions.tcd',
+                ['gs'] = 'actions.change_sort',
+                ['gx'] = 'actions.open_external',
+                ['g.'] = 'actions.toggle_hidden',
+            },
+            view_options = {
+                show_hidden = true,
+            },
+        },
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        keys = {
+            { '<leader>o', '<cmd>Oil<CR>', desc = 'Oil' },
+        },
+    },
+
+    -- Barbar (табы/буферы)
+    {
+        'romgrk/barbar.nvim',
+        lazy = false,
+        dependencies = {
+            'nvim-tree/nvim-web-devicons',
+        },
+        init = function()
+            vim.g.barbar_auto_setup = false
+        end,
+        config = function(_, opts)
+            require('barbar').setup(opts)
+            -- Force transparent backgrounds after barbar loads
+            vim.schedule(function()
+                for name, _ in pairs(vim.api.nvim_get_hl(0, {})) do
+                    if name:match '^Buffer' then
+                        local hl = vim.api.nvim_get_hl(0, { name = name })
+                        hl.bg = nil
+                        vim.api.nvim_set_hl(0, name, hl)
+                    end
+                end
+            end)
+        end,
+        opts = {
+            focus_on_close = 'left',
+            sidebar_filetypes = {
+                ['neo-tree'] = { event = 'BufWinLeave' },
+            },
+            auto_hide = false,
+            icons = {
+                inactive = { separator = { left = '', right = '' } },
+            },
+        },
+        keys = {
+            { '<S-Tab>', '<cmd>BufferPrevious<cr>', desc = 'Previous buffer' },
+            { '<Tab>', '<cmd>BufferNext<cr>', desc = 'Next buffer' },
+            { '<leader>1', '<cmd>BufferGoto 1<cr>', desc = 'Buffer 1' },
+            { '<leader>2', '<cmd>BufferGoto 2<cr>', desc = 'Buffer 2' },
+            { '<leader>3', '<cmd>BufferGoto 3<cr>', desc = 'Buffer 3' },
+            { '<leader>4', '<cmd>BufferGoto 4<cr>', desc = 'Buffer 4' },
+            { '<leader>5', '<cmd>BufferGoto 5<cr>', desc = 'Buffer 5' },
+            { '<leader>bo', '<cmd>BufferCloseAllButCurrent<cr>', desc = 'Close other buffers' },
+            { '<leader>bc', '<cmd>BufferClose<cr>', desc = 'Close buffer' },
+        },
+    },
+
+    -- Fetchfact for dashboard footer
+    {
+        'notelgnis/fetchfact.nvim',
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        opts = {
+            cache_file_path = '~/.cache/facts_cache.json',
+            config_file_path = '~/.config/.facts_api_key',
+            min_facts = 2,
+            max_facts = 10,
+        },
+    },
+
+    -- Dashboard
+    {
+        'nvimdev/dashboard-nvim',
+        event = 'VimEnter',
+        config = function()
+            require('dashboard').setup {
+                theme = 'hyper',
+                config = {
+                    packages = {},
+                    shortcut = {},
+                    header = {
+
+                        '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+                        '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⣰⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢲⡄⠀',
+                        '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠀⠀⠀⠠⣶⣦⢀⠀⠀⠀⠀⠀⢠⠁⠀⠀⢀⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀',
+                        '⠠⣤⠀⠀⠀⠀⠀⠀⠀⣜⠀⠀⠀⠀⠀⠉⠫⣿⣗⣤⡀⠀⠀⠇⣀⠀⠠⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀󱇽⠆ ⡇',
+                        '⠀⠈⠻▒⣦⣄⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⣷⣾⡝⠀⣿⠀⠀⠀⣷⠀⠀⠀⠀⠀⠀⠀⠀  ⠇',
+                        '⠀⠀⠀⠀⠁⠹░⡟⡁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀░⠇⠀⢸⡃⠀⠀⣼▒⠀⠀⠀⠀⠀⠀󱇽⣦⠀⣼⠀',
+                        '⠀⠀⠀⠀⠀⠀⠀⠈⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰▒⡿⠀⠀⠀⢻⠀⣾▒⣆⠀⠀⠀⠀⠀⠀⠀⣼⠀⠀',
+                        '⠀⠀⠀⠀⠀⠀⠠⣾▒⠈⠻⣇⡤⡀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠁⠀⠀⠀⠀⡿▒⠁⠐▒⠇⠀⠀⠀⠀ ⢀⠀⠀⠀',
+                        '⠀⠀⠀⠀⠀⠀⣾▒⠀⠀⠀⠈⢿░⡦⡀⠀⠀⠀⠀⢠⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡼⠋⠀⠀⠀⠀',
+                        '⠀⠀⠀⠀⠀⡾▒⠁⠀⠀⠀⠀⠀⠀⠀⠙░⣧⣀⠀⠀⡧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+                        '⠀⠀⠀⠀⣼⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑░░⣦⡈⠹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+                        '⠀⠀⠀⠰⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠫⡉⠀⠀ ⠀ Yep, exactly that. ',
+                        '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⢧⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+                        '⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
+                        '',
+                    },
+                    footer = function()
+                        local ok, fact = pcall(function()
+                            return require('fetchfact').get_split_fact(85)
+                        end)
+                        if ok and fact then
+                            return { '', unpack(fact) }
+                        end
+                        return { '', 'Ready to code!' }
+                    end,
+                },
+            }
+        end,
+        dependencies = {
+            { 'nvim-tree/nvim-web-devicons' },
+        },
+    },
+
+    -- Mason (для установки LSP серверов)
+    {
+        'williamboman/mason.nvim',
+        config = function()
+            require('mason').setup()
+        end,
+    },
+    {
+        'williamboman/mason-lspconfig.nvim',
+        dependencies = { 'williamboman/mason.nvim' },
+        config = function()
+            require('mason-lspconfig').setup {
+                ensure_installed = {
+                    'lua_ls',
+                },
+            }
+        end,
+    },
+
+    -- Colorizer (показывает цвета в коде)
+    {
+        'NvChad/nvim-colorizer.lua',
+        event = 'BufReadPost',
+        opts = {
+            user_default_options = {
+                RGB = true,
+                RRGGBB = true,
+                names = false,
+                RRGGBBAA = true,
+                rgb_fn = true,
+                hsl_fn = true,
+                css = true,
+                css_fn = true,
+                mode = 'virtualtext',
+                virtualtext = '■',
+                virtualtext_inline = true,
+            },
+        },
+    },
+
+    -- Render markdown с поддержкой mermaid
+    {
+        'MeanderingProgrammer/render-markdown.nvim',
+        dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
+        ft = { 'markdown' },
+        opts = {
+            code = {
+                border = 'none',
+                above = '',
+                below = '',
+            },
+        },
+    },
+
+    -- Fast Fuzzy File finder
+    {
+        'dmtrKovalenko/fff.nvim',
+        build = function()
+            require('fff.download').download_or_build_binary()
+        end,
+        lazy = false,
+        config = function()
+            vim.api.nvim_set_hl(0, 'FFFBorder', { fg = '#062738', bg = 'NONE' })
+            vim.api.nvim_set_hl(0, 'FFFActiveFile', { bg = '#1a3a42', fg = 'NONE' })
+            require('fff').setup {
+                prompt = '> ',
+                hl = {
+                    border = 'FFFBorder',
+                    active_file = 'FFFActiveFile',
+                },
+                layout = {
+                    preview_size = 0.5,
+                },
+            }
+        end,
+        keys = {
+            {
+                'ff',
+                function()
+                    require('fff').find_files()
+                end,
+                desc = 'Find files (fff)',
+            },
+        },
+    },
+
+    -- Telescope
+    {
+        'nvim-telescope/telescope.nvim',
+        branch = '0.1.x',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+            { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+        },
+        config = function()
+            require('telescope').setup {
+                defaults = {
+                    border = false,
+                    layout_config = {
+                        horizontal = {
+                            preview_width = 0.5,
+                        },
+                    },
+                },
+            }
+            -- Set telescope border color
+            vim.api.nvim_set_hl(0, 'TelescopeBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopePromptBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopeResultsBorder', { fg = '#062738' })
+            vim.api.nvim_set_hl(0, 'TelescopePreviewBorder', { fg = '#062738' })
+            pcall(require('telescope').load_extension, 'fzf')
+
+            local builtin = require 'telescope.builtin'
+            vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+            vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+            vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[S]earch [B]uffers' })
+            vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
+            vim.keymap.set('n', '<leader>sr', builtin.oldfiles, { desc = '[S]earch [R]ecent' })
+            vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = 'Find buffers' })
+        end,
+    },
+
+    -- Which-key (подсказки клавиш)
+    {
+        'folke/which-key.nvim',
+        event = 'VimEnter',
+        config = function()
+            require('which-key').setup {
+                win = {
+                    border = 'none',
+                },
+            }
+            require('which-key').add {
+                { '<leader>s', group = '[S]earch' },
+                { '<leader>c', group = '[C]ode' },
+                { '<leader>r', group = '[R]ename' },
+            }
+        end,
+    },
+
+    -- Todo-comments (подсветка TODO/FIXME/NOTE)
+    {
+        'folke/todo-comments.nvim',
+        event = 'VimEnter',
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        opts = { signs = false },
+    },
+
+    -- Auto Session (save/restore buffers, windows, etc.)
+    {
+        'rmagatti/auto-session',
+        lazy = false,
+        opts = {
+            suppressed_dirs = { '~/', '~/Downloads', '~/Desktop', '/' },
+            pre_save_cmds = {
+                function()
+                    pcall(vim.cmd, 'Neotree close')
+                end,
+            },
+            post_restore_cmds = {
+                function()
+                    vim.defer_fn(function()
+                        pcall(vim.cmd, 'Neotree show')
+                    end, 50)
+                end,
+            },
+        },
+        keys = {
+            { '<leader>ss', '<cmd>SessionSave<cr>', desc = 'Save session' },
+            { '<leader>sr', '<cmd>SessionRestore<cr>', desc = 'Restore session' },
+            { '<leader>sd', '<cmd>SessionDelete<cr>', desc = 'Delete session' },
+        },
+    },
+
+    -- Blink.cmp (автокомплит)
+    {
+        'saghen/blink.cmp',
+        dependencies = { 'rafamadriz/friendly-snippets' },
+        version = '*',
+        opts = {
+            keymap = {
+                preset = 'default',
+                ['<CR>'] = { 'accept', 'fallback' },
+            },
+            appearance = {
+                use_nvim_cmp_as_default = true,
+                nerd_font_variant = 'mono',
+            },
+            sources = {
+                default = { 'lsp', 'path', 'snippets', 'buffer' },
+            },
+            completion = {
+                accept = { auto_brackets = { enabled = false } },
+            },
+        },
+    },
+
+    -- Indent guides (rainbow)
+    {
+        'lukas-reineke/indent-blankline.nvim',
+        main = 'ibl',
+        config = function()
+            local highlight = {
+                'RainbowRed',
+                'RainbowYellow',
+                'RainbowBlue',
+                'RainbowOrange',
+                'RainbowGreen',
+                'RainbowViolet',
+                'RainbowCyan',
+            }
+
+            local hooks = require 'ibl.hooks'
+            hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+                if vim.o.background == 'dark' then
+                    -- Muted colors for dark theme
+                    vim.api.nvim_set_hl(0, 'RainbowRed', { fg = '#5c3a3d' })
+                    vim.api.nvim_set_hl(0, 'RainbowYellow', { fg = '#5c5340' })
+                    vim.api.nvim_set_hl(0, 'RainbowBlue', { fg = '#3a4d5c' })
+                    vim.api.nvim_set_hl(0, 'RainbowOrange', { fg = '#5c4a3a' })
+                    vim.api.nvim_set_hl(0, 'RainbowGreen', { fg = '#3d5c3a' })
+                    vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#4d3a5c' })
+                    vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#3a5c5c' })
+                    vim.api.nvim_set_hl(0, 'IblScope', { fg = '#6b8d94' })
+                else
+                    -- Bright colors for light theme
+                    vim.api.nvim_set_hl(0, 'RainbowRed', { fg = '#E06C75' })
+                    vim.api.nvim_set_hl(0, 'RainbowYellow', { fg = '#E5C07B' })
+                    vim.api.nvim_set_hl(0, 'RainbowBlue', { fg = '#61AFEF' })
+                    vim.api.nvim_set_hl(0, 'RainbowOrange', { fg = '#D19A66' })
+                    vim.api.nvim_set_hl(0, 'RainbowGreen', { fg = '#98C379' })
+                    vim.api.nvim_set_hl(0, 'RainbowViolet', { fg = '#C678DD' })
+                    vim.api.nvim_set_hl(0, 'RainbowCyan', { fg = '#56B6C2' })
+                    vim.api.nvim_set_hl(0, 'IblScope', { fg = '#888888' })
+                end
+            end)
+
+            require('ibl').setup {
+                exclude = { filetypes = { 'dashboard' } },
+                indent = {
+                    char = '┊',
+                    highlight = highlight,
+                },
+            }
+        end,
+    },
+
+    -- Treesitter (подсветка синтаксиса)
+    {
+        'nvim-treesitter/nvim-treesitter',
+        build = ':TSUpdate',
+        opts = {
+            ensure_installed = {
+                'lua',
+                'sql',
+                'c_sharp',
+                'php',
+                'javascript',
+                'typescript',
+                'json',
+                'xml',
+                'markdown',
+                'markdown_inline',
+                'mermaid',
+                'html',
+                'css',
+                'scss',
+                'yaml',
+                'bash',
+                'dockerfile',
+                'vim',
+                'vimdoc',
+            },
+            auto_install = true,
+            highlight = {
+                enable = true,
+                disable = { 'dockerfile' },
+                additional_vim_regex_highlighting = { 'dockerfile' },
+            },
+            indent = { enable = true },
+        },
+    },
+
+    -- Mini.nvim (statusline + indentscope)
+    {
+        'echasnovski/mini.nvim',
+        config = function()
+            local statusline = require 'mini.statusline'
+            statusline.setup { use_icons = vim.g.have_nerd_font }
+            statusline.section_location = function()
+                return '%2l:%-2v'
+            end
+
+            require('mini.comment').setup()
+            require('mini.surround').setup()
+            require('mini.pairs').setup()
+            require('mini.jump').setup()
+            require('mini.splitjoin').setup()
+            require('mini.cmdline').setup({ autocomplete = { map_arrows = false } })
+            -- Arrow keys for cmdline completion navigation
+            vim.keymap.set('c', '<Down>', function()
+                return vim.fn.wildmenumode() == 1 and '<C-n>' or '<Down>'
+            end, { expr = true, desc = 'Next completion' })
+            vim.keymap.set('c', '<Up>', function()
+                return vim.fn.wildmenumode() == 1 and '<C-p>' or '<Up>'
+            end, { expr = true, desc = 'Prev completion' })
+        end,
+    },
+}, {
+    ui = {
+        icons = vim.g.have_nerd_font and {} or {
+            cmd = '⌘',
+            config = '🛠',
+            event = '📅',
+            ft = '📂',
+            init = '⚙',
+            keys = '🗝',
+            plugin = '🔌',
+            runtime = '💻',
+            require = '🌙',
+            source = '📄',
+            start = '🚀',
+            task = '📌',
+            lazy = '💤 ',
+        },
+    },
+})
