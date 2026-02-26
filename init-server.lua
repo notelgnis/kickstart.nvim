@@ -43,6 +43,23 @@ vim.keymap.set('v', '<LeftRelease>', '"+y<LeftRelease>', { desc = 'Copy on mouse
 
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- Neo-tree / Editor focus switching (Cmd+Arrow)
+vim.keymap.set('n', '<D-Left>', '<cmd>Neotree focus<CR>', { desc = 'Focus Neo-tree' })
+vim.keymap.set('n', '<D-Right>', function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        if ft ~= 'neo-tree' and ft ~= 'neo-tree-popup' then
+            vim.api.nvim_set_current_win(win)
+            return
+        end
+    end
+end, { desc = 'Focus editor' })
+
+-- Save all with Cmd+S
+vim.keymap.set({ 'n', 'i', 'v' }, '<D-s>', '<cmd>wa<CR>', { desc = 'Save all files' })
+
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
@@ -579,6 +596,7 @@ require('lazy').setup({
                 callback = function()
                     if vim.bo.filetype == 'neo-tree' then
                         vim.wo.statusline = ' '
+                        vim.wo.cursorline = false
                     end
                 end,
             })
