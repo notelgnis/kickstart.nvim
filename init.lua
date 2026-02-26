@@ -38,7 +38,7 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.cursorline = true
-vim.opt.cursorlineopt = 'line,number'
+vim.opt.cursorlineopt = 'number'  -- only highlight line number, not the whole line
 vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.opt.hidden = true
@@ -49,14 +49,52 @@ vim.opt.expandtab = true
 vim.opt.guicursor = 'n-v-c:block-Cursor,i-ci-ve:block-iCursor-blinkon500-blinkoff500,r-cr:hor20,o:hor50'
 vim.opt.sessionoptions = 'blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions'
 
+-- Copy on mouse select release (like terminal)
+vim.keymap.set('v', '<LeftRelease>', '"+y<LeftRelease>', { desc = 'Copy on mouse release' })
+
 -- [[ Keymaps ]]
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('t', '<C-q>', [[<C-\><C-n>]], { desc = 'Exit terminal mode' })
 vim.keymap.set('n', '<leader>xx', '<cmd>Telescope diagnostics<CR>', { desc = 'Diagnostics list' })
 vim.keymap.set('n', '<leader>xd', vim.diagnostic.open_float, { desc = 'Diagnostic under cursor' })
+
+-- Neo-tree / Editor focus switching (Cmd+Arrow)
+vim.keymap.set('n', '<D-Left>', '<cmd>Neotree focus<CR>', { desc = 'Focus Neo-tree' })
+vim.keymap.set('n', '<D-Right>', function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        if ft ~= 'neo-tree' and ft ~= 'neo-tree-popup' then
+            vim.api.nvim_set_current_win(win)
+            return
+        end
+    end
+end, { desc = 'Focus editor' })
+
+-- Save all with Cmd+S
+vim.keymap.set({ 'n', 'i', 'v' }, '<D-s>', '<cmd>wa<CR>', { desc = 'Save all files' })
+
+-- Clean up unnamed/empty buffers (leftover from diff views)
+vim.keymap.set('n', '<leader>bx', function()
+    local deleted = 0
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        local name = vim.api.nvim_buf_get_name(buf)
+        local listed = vim.bo[buf].buflisted
+        if listed and name == '' and vim.api.nvim_buf_is_loaded(buf) then
+            local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+            local is_empty = #lines == 0 or (#lines == 1 and lines[1] == '')
+            if is_empty then
+                vim.api.nvim_buf_delete(buf, { force = true })
+                deleted = deleted + 1
+            end
+        end
+    end
+    vim.notify('Cleaned ' .. deleted .. ' empty buffer(s)', vim.log.levels.INFO)
+end, { desc = 'Clean empty buffers' })
 
 -- Toggle dark/light
 local function apply_cterm_highlights()
@@ -378,16 +416,18 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'WinSeparator', { bg = 'NONE', fg = '#0b1f26' })
                     vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeCursorLine', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText1', { fg = grey })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText2', { fg = bg_alt })
                     vim.api.nvim_set_hl(0, 'NeoTreeIndentMarker', { fg = '#4a8090' })
                     vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE', fg = bg_dark })
                     vim.api.nvim_set_hl(0, 'NonText', { bg = 'NONE', fg = grey })
-                    local cursor_bg = '#1a3a42'
+                    -- local cursor_bg = '#1a3a42'  -- teal
+                    local cursor_bg = '#454a52'  -- grey with slight blue tint
                     vim.api.nvim_set_hl(0, 'CursorLine', { bg = cursor_bg, underline = false })
                     vim.api.nvim_set_hl(0, 'Visual', { bg = '#6b8e94', fg = '#ffffff' })
-                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = cursor_bg, fg = yellow })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = 'NONE', fg = yellow })
                     vim.api.nvim_set_hl(0, 'LineNr', { fg = grey })
                     vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'NONE', fg = grey })
                     vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'NONE', fg = green })
@@ -518,6 +558,7 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'NeoTreeNormal', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeNormalNC', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeEndOfBuffer', { bg = 'NONE' })
+                    vim.api.nvim_set_hl(0, 'NeoTreeCursorLine', { bg = 'NONE' })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText1', { fg = '#aaaaaa' })
                     vim.api.nvim_set_hl(0, 'NeoTreeFadeText2', { fg = '#dddddd' })
                     vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'NONE' })
@@ -573,6 +614,8 @@ require('lazy').setup({
                     vim.api.nvim_set_hl(0, 'SnacksPickerMatch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
                     vim.api.nvim_set_hl(0, 'IncSearch', { bg = '#F3BF5D', fg = '#101B1D', bold = true })
                     vim.api.nvim_set_hl(0, 'Search', { bg = '#F3BF5D', fg = '#101B1D' })
+                    vim.api.nvim_set_hl(0, 'CursorLineNr', { bg = 'NONE', fg = '#005faf', bold = true })
+                    vim.api.nvim_set_hl(0, 'LineNr', { bg = 'NONE', fg = '#aaaaaa' })
                     -- Neo-tree git highlights (no italic, same color for all)
                     local git_color = '#d75f00'
                     vim.api.nvim_set_hl(0, 'NeoTreeGitModified', { fg = git_color, italic = false })
@@ -624,7 +667,7 @@ require('lazy').setup({
             require('gitsigns').setup {
                 current_line_blame = true,
                 current_line_blame_opts = {
-                    delay = 300,
+                    delay = 2000,
                 },
             }
             -- Set highlight after gitsigns loads
@@ -1048,6 +1091,23 @@ require('lazy').setup({
                 desc = 'HTTP next request',
                 ft = 'http',
             },
+            {
+                '<leader>he',
+                function()
+                    require('kulala').set_selected_env()
+                end,
+                desc = 'HTTP select env',
+                ft = 'http',
+            },
+            {
+                '<leader>hi',
+                function()
+                    local env = require('kulala').get_selected_env()
+                    vim.notify('Current env: ' .. (env or 'none'), vim.log.levels.INFO)
+                end,
+                desc = 'HTTP show current env',
+                ft = 'http',
+            },
         },
     },
 
@@ -1246,26 +1306,18 @@ require('lazy').setup({
     },
 
     -- Claude Code integration (WebSocket MCP)
+    -- Required for /ide integration to detect Neovim
     {
         'coder/claudecode.nvim',
-        dependencies = { 'folke/snacks.nvim' },
         lazy = false,
-        config = true,
+        opts = {
+            diff_opts = {
+                auto_close_on_accept = true,
+                open_in_new_tab = true,         -- открывать diff в новом табе, не сплите
+            },
+        },
         keys = {
             { '<leader>a', nil, desc = 'AI/Claude Code' },
-            { '<leader>ac', '<cmd>ClaudeCode<cr>', desc = 'Toggle Claude' },
-            { '<leader>af', '<cmd>ClaudeCodeFocus<cr>', desc = 'Focus Claude' },
-            { '<leader>ar', '<cmd>ClaudeCode --resume<cr>', desc = 'Resume Claude' },
-            { '<leader>aC', '<cmd>ClaudeCode --continue<cr>', desc = 'Continue Claude' },
-            { '<leader>am', '<cmd>ClaudeCodeSelectModel<cr>', desc = 'Select Claude model' },
-            { '<leader>ab', '<cmd>ClaudeCodeAdd %<cr>', desc = 'Add current buffer' },
-            { '<leader>as', '<cmd>ClaudeCodeSend<cr>', mode = 'v', desc = 'Send to Claude' },
-            {
-                '<leader>as',
-                '<cmd>ClaudeCodeTreeAdd<cr>',
-                desc = 'Add file',
-                ft = { 'NvimTree', 'neo-tree', 'oil', 'minifiles', 'netrw', 'nerdtree' },
-            },
             { '<leader>aa', '<cmd>ClaudeCodeDiffAccept<cr>', desc = 'Accept diff' },
             { '<leader>ad', '<cmd>ClaudeCodeDiffDeny<cr>', desc = 'Deny diff' },
         },

@@ -98,6 +98,26 @@
 - `:s/old/new/g` - replace all in line
 - `:%s/old/new/g` - replace all in file
 - `:%s/old/new/gc` - replace with confirm
+- `:%s/old/new/gi` - ignore case
+
+### Replace in Multiple Files
+
+- `:bufdo %s/old/new/g | update` - all open buffers
+- `:args **/*.lua` then `:argdo %s/old/new/g | update` - files by pattern
+- `:grep old **/*.lua` then `:cdo s/old/new/g | update` - quickfix results
+- `:cfdo %s/old/new/g | update` - per file in quickfix (faster)
+
+### Telescope + Quickfix Workflow
+
+1. `<leader>fg` - live grep
+2. `Ctrl+Q` - send results to quickfix
+3. `:cdo s/old/new/g | update` - replace in all matches
+
+### Tips
+
+- `:%s//new/g` - replace last search (`/pattern`) with new
+- `:%s/old//g` - delete all occurrences of old
+- `:'<,'>s/old/new/g` - replace in visual selection
 
 ## Undo/Redo
 
