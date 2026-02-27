@@ -313,14 +313,6 @@ require('lazy').setup({
         },
         config = function()
             require('neo-tree').setup {
-                event_handlers = {
-                    {
-                        event = 'neo_tree_window_after_open',
-                        handler = function(args)
-                            vim.wo[args.winid].cursorline = false
-                        end,
-                    },
-                },
                 source_selector = {
                     statusline = false,
                 },
@@ -604,7 +596,6 @@ require('lazy').setup({
                 callback = function()
                     if vim.bo.filetype == 'neo-tree' then
                         vim.wo.statusline = ' '
-                        vim.wo.cursorline = false
                     end
                 end,
             })
@@ -1031,6 +1022,8 @@ require('lazy').setup({
                 function()
                     vim.defer_fn(function()
                         pcall(vim.cmd, 'Neotree show')
+                        -- Re-apply highlights after session restore (replaces dark-notify's role)
+                        _G.apply_custom_highlights()
                     end, 50)
                 end,
             },
